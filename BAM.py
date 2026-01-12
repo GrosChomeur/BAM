@@ -6,10 +6,12 @@ con = connect("BAM.db")
 cur = con.cursor()
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
-    cur.execute("""CREATE TABLE IF NOT EXISTS boutique(
-                id_resa int PRIMARY KEY,
-                
+    cur.execute("""CREATE TABLE IF NOT EXISTS date(
+                annee INT NOT NULL,
+                mois INT,
+                jour INT
                 )""")
+    cur.execute("""INSERT INTO date VALUES (2026,1,12)""")
     
 
 def date(j : int,  m : int, a : int) -> None :
@@ -19,7 +21,7 @@ def date(j : int,  m : int, a : int) -> None :
 
 
 def jour_suivant() -> (int, int, int) :
-    a, m, j = cur.execute("SELECT ")     
+    a, m, j = cur.execute("SELECT * FROM date")     
     
         #if m==2 alors verifier année bissxtile
     if a % 4 == 0 :
