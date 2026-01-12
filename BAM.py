@@ -6,7 +6,10 @@ con = connect("BAM.db")
 cur = con.cursor()
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
-    cur.execute("CREATE TABLE boutique()")
+    cur.execute("""CREATE TABLE IF NOT EXISTS boutique(
+                id_resa int PRIMARY KEY,
+                
+                )""")
     
 
 def date(j : int,  m : int, a : int) -> None :
