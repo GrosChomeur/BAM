@@ -49,5 +49,9 @@ def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     ...
 
 
-def supprime_resa():
+def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
+    ...
+
+
+def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     ...
