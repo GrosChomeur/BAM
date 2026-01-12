@@ -49,14 +49,23 @@ def jour_suivant() -> tuple[int, int, int] :
     return (a, m ,j)
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
+    #verif si c possible
+
+    #cur.execute("INSERT INTO gnagngna ")
     ...
 
-
 def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
+    #si resa est plus ancienne que la date -> on ne peut pas supprimer
+    #sinon  : cur.execute("DEL ...")
     ...
 
 
 def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
+    #récupérer la difficulté puis évaluer le temps de trajet et l'ajouter à l'heure de départ 
+    ...
+
+def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
+    #récupérer la difficulté puis évaluer le temps de trajet et l'ajouter à l'heure de départ
     ...
 
 
