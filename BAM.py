@@ -2,6 +2,7 @@ from sqlite3 import *
 
 con = connect("BAM.db")
 
+
 cur = con.cursor()
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
