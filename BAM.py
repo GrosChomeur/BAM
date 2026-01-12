@@ -20,7 +20,7 @@ def date(j : int,  m : int, a : int) -> None :
     cur.execute("UPDATE table SET (?)", (j, m, a))
 
 
-def jour_suivant() -> (int, int, int) :
+def jour_suivant() -> tuple[int, int, int] :
     a, m, j = cur.execute("SELECT * FROM date")     
     
         #if m==2 alors verifier année bissxtile
