@@ -12,7 +12,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
 def date(j : int,  m : int, a : int) -> None :
 
     
-    cur.execute("UPDATE table SET (?,?,?)", (j, m, a))
+    cur.execute("UPDATE table SET (?)", (j, m, a))
 
 
 def jour_suivant() -> (int, int, int) :
