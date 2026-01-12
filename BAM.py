@@ -51,7 +51,7 @@ def jour_suivant() -> tuple[int, int, int] :
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
     #verif si c possible
 
-    #cur.execute("INSERT INTO gnagngna ")
+    cur.execute(f"INSERT INTO location VALUES {()}")
     ...
 
 def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
