@@ -5,21 +5,44 @@ con = connect("BAM.db")
 
 cur = con.cursor()
 
+
+
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
+    cur.execute("DROP TABLE date") # empêche plusieurs enregistrements
     cur.execute("""CREATE TABLE IF NOT EXISTS date(
-                annee INT NOT NULL,
+                annee INT,
                 mois INT,
                 jour INT
                 )""")
-    cur.execute("""INSERT INTO date VALUES (2026,1,12)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS kayak(
+                id_kayak INT PRIMARY KEY,
+                type INT
+                )""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS location(
+            id_location INT PRIMARY KEY AUTO_INCREMENT,
+            type INT,
+            id_kayak INT REFERENCES kayak(id_kayak)
+            )""")
+    
+    
+    
+    cur.execute("INSERT INTO date VALUES (2026,1,12)")
     
 
+
+def id_kayak_insert():
+    cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 1) for i in range(1,51)])
+    cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 2) for i in range(51,101)])
+
+
+
 def date(j : int,  m : int, a : int) -> None :
-    cur.execute("UPDATE table SET (?)", (j, m, a))
+    cur.executemany("UPDATE table SET (?)", [(j, m, a)])
 
 
 def jour_suivant() -> tuple[int, int, int] :
-    a, m, j = cur.execute("SELECT * FROM date")     
+    cur.execute("SELECT * FROM date")
+    a, m, j = cur.fetchone()
     
         #if m==2 alors verifier année bissxtile
     if a % 4 == 0 :
@@ -37,21 +60,26 @@ def jour_suivant() -> tuple[int, int, int] :
         else :
             max_j=30
     
-    if max_j == j :
+    if max_j == j : # ou <= j pour si une valeur de date est corrompue dès l'arrivée
         j = 1
+        if m == 12 :
+            m = 1
+            a += 1
+        else :
+            m +=1
     else :
         j += 1
-
-    if m==12 :
-        a += 1
-        m = 1
+    
+    print(a,m,j)
     
     return (a, m ,j)
+
+#jour_suivant()
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
     #verif si c possible
 
-    cur.execute(f"INSERT INTO location VALUES {()}")
+    #cur.execute("INSERT INTO gnagngna ")
     ...
 
 def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
