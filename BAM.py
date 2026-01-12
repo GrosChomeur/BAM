@@ -1,13 +1,12 @@
 from sqlite3 import *
 
 con = connect("BAM.db")
-
-
 cur = con.cursor()
 
 
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
+<<<<<<< HEAD
     
     cur.execute("DROP TABLE date") # empêche plusieurs enregistrements
 
@@ -33,11 +32,89 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
             nb_1place INT,
             nb_2places INT
             )""")            # id_kayak INT REFERENCES kayak(id_kayak)
+=======
+>>>>>>> a27f4c84c5976915bd3f88f9dd18d62dc34ac633
     
+    cur.execute("PRAGMA foreign_keys = ON") # Activer les clés étrangères
     
+    # --- Empêche plusieurs enregistrements ---
+    cur.execute("DROP TABLE IF EXISTS retour_kayak")
+    cur.execute("DROP TABLE IF EXISTS location")
+    cur.execute("DROP TABLE IF EXISTS kayak")
+    cur.execute("DROP TABLE IF EXISTS nb_kayak")
+    cur.execute("DROP TABLE IF EXISTS parcours")
+    cur.execute("DROP TABLE IF EXISTS employe")
+    cur.execute("DROP TABLE IF EXISTS client")
+    cur.execute("DROP TABLE IF EXISTS date")
     
+    # --- Création de la table date ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS date(
+        annee INT,
+        mois INT,
+        jour INT
+        )
+    """)
+    # --- Création de la table kayak ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS kayak(
+        id_kayak INTEGER PRIMARY KEY AUTOINCREMENT,
+        type INT REFERENCES nb_kayak(type),
+        etat TEXT
+        )
+    """)
+    
+    # --- Création de la table location ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS location(
+        id_location INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_kayak INT REFERENCES kayak(id_kayak),
+        id_parcours INT REFERENCES parcours(id_parcours),
+        id_client INT REFERENCES client(id_client),
+        date DATE,
+        heure_debut TIME,
+        heure_fin TIME,
+        heure_retour TIME,
+        )
+    """)
+    #Les dates sont de la forme : année-mois-jour
+    #Les heures sont de la forme : xx:xx
+    
+    # --- Création de la table client ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS client(
+        id_client INTEGER PRIMARY KEY AUTOINCREMENT,
+        nom TEXT,
+        prenom TEXT,
+        reservation BOOLEAN
+        )
+    """)
+    
+    # --- Création de la table parcours ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS parcours(
+        id_parcours INTEGER PRIMARY KEY AUTOINCREMENT,
+        nom_parcours TEXT,
+        distance INT,
+        depart TEXT,
+        arrivee TEXT
+        )
+    """)
+    
+    # --- Création de la table nbkayak ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS nbkayak(
+        type TEXT INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre INT
+        )       
+    """)
     cur.execute("INSERT INTO date VALUES (2026,1,12)")
     
+    # --- Création de la table employe ---
+    cur.execute("""
+    CREATE TABLE
+        )      
+    """)
 
 
 def id_kayak_insert():
