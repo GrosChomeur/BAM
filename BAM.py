@@ -90,16 +90,19 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
 
 
 def id_kayak_insert():
+    """surement pas utile mais c okay"""
     cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 1) for i in range(1,51)])
     cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 2) for i in range(51,101)])
 
 
 
 def date(j : int,  m : int, a : int) -> None :
+    """update date dans la base de donnée"""
     cur.executemany("UPDATE table SET (?)", [(j, m, a)])
 
 
 def jour_suivant() -> tuple[int, int, int] :
+    """trouver la date suivante de celle stockée dans la base de donnée"""
     cur.execute("SELECT * FROM date")
     a, m, j = cur.fetchone()
     
@@ -136,6 +139,7 @@ def jour_suivant() -> tuple[int, int, int] :
 #jour_suivant()
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
+    """cherch si la résa est possible, si oui ajoute la résa"""
     #verif si c possible
     cur.execute("SELECT * FROM date")
     
@@ -145,6 +149,7 @@ def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     
 
 def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
+    """supprime une résa si elle est possible à supprimer"""
     # si resa est plus ancienne que la date -> on ne peut pas supprimer
 
     # sinon  : cur.execute("DEL ...")
@@ -157,7 +162,8 @@ def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int
 
 # On considère que l'employé commence à 12h30 par aller au point le plus proche, parcours facile, 0
 def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) : 
-    cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0, a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
+    """cherche les kayaks à ramasser et renvoie les horaires de ramassage et leur nombre"""
+    cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
     rows = cur.fetchall() # liste des enregistrements avec un 2 place
 
     ramassage0 = [(12 + i, 30) for i in range(6)]
