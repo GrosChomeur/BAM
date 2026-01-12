@@ -10,7 +10,15 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
     
 
 def date(j : int,  m : int, a : int) -> None :
-    #if m==2 alors verifier année bissxtile
+
+    
+    cur.execute("UPDATE table SET (?,?,?)", (j, m, a))
+
+
+def jour_suivant() -> (int, int, int) :
+    a, m, j = cur.execute("SELECT ")     
+    
+        #if m==2 alors verifier année bissxtile
     if a % 4 == 0 :
         if m in [1,3,5,7,8,10,12]:
             max_j=31
@@ -35,10 +43,11 @@ def date(j : int,  m : int, a : int) -> None :
         a += 1
         m = 1
     
-    cur.execute("UPDATE table SET (?,?,?)", (j, m, a))
+    return (a, m ,j)
 
-
-def jour_suivant() -> (int, int, int) :
+def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
     ...
 
-def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int)
+
+def supprime_resa():
+    ...
