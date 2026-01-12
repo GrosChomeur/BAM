@@ -6,34 +6,6 @@ cur = con.cursor()
 
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
-<<<<<<< HEAD
-    
-    cur.execute("DROP TABLE date") # empêche plusieurs enregistrements
-
-    cur.execute("""CREATE TABLE IF NOT EXISTS date(
-                annee INT,
-                mois INT,
-                jour INT
-                )""")
-    
-    '''cur.execute("""CREATE TABLE IF NOT EXISTS kayak(
-                id_kayak INT PRIMARY KEY,
-                type INT
-                )""")'''
-    
-    cur.execute("""CREATE TABLE IF NOT EXISTS location(
-            id_location INT PRIMARY KEY AUTO_INCREMENT,
-            a_depart INT,
-            m_depart INT,
-            j_depart INT,
-            h_depart INT,
-            min_depart INT,
-            parcours INT,
-            nb_1place INT,
-            nb_2places INT
-            )""")            # id_kayak INT REFERENCES kayak(id_kayak)
-=======
->>>>>>> a27f4c84c5976915bd3f88f9dd18d62dc34ac633
     
     cur.execute("PRAGMA foreign_keys = ON") # Activer les clés étrangères
     
