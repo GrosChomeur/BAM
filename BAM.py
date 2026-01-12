@@ -8,21 +8,31 @@ cur = con.cursor()
 
 
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
+    
     cur.execute("DROP TABLE date") # empêche plusieurs enregistrements
+
     cur.execute("""CREATE TABLE IF NOT EXISTS date(
                 annee INT,
                 mois INT,
                 jour INT
                 )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS kayak(
+    
+    '''cur.execute("""CREATE TABLE IF NOT EXISTS kayak(
                 id_kayak INT PRIMARY KEY,
                 type INT
-                )""")
+                )""")'''
+    
     cur.execute("""CREATE TABLE IF NOT EXISTS location(
             id_location INT PRIMARY KEY AUTO_INCREMENT,
-            type INT,
-            id_kayak INT REFERENCES kayak(id_kayak)
-            )""")
+            a_depart INT,
+            m_depart INT,
+            j_depart INT,
+            h_depart INT,
+            min_depart INT,
+            parcours INT,
+            nb_1place INT,
+            nb_2places INT
+            )""")            # id_kayak INT REFERENCES kayak(id_kayak)
     
     
     
@@ -78,22 +88,67 @@ def jour_suivant() -> tuple[int, int, int] :
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
     #verif si c possible
-
+    cur.execute("SELECT * FROM date")
+    
+    if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
+        ... #ajoute si possible 
     #cur.execute("INSERT INTO gnagngna ")
-    ...
+    
 
 def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
-    #si resa est plus ancienne que la date -> on ne peut pas supprimer
-    #sinon  : cur.execute("DEL ...")
-    ...
+    # si resa est plus ancienne que la date -> on ne peut pas supprimer
+
+    # sinon  : cur.execute("DEL ...")
+    cur.execute("SELECT * FROM date")
+    
+    if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
+        ...
 
 
-def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
-    #récupérer la difficulté puis évaluer le temps de trajet et l'ajouter à l'heure de départ 
-    ...
+
+# On considère que l'employé commence à 12h30 par aller au point le plus proche, parcours facile, 0
+def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) : 
+    cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0, a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
+    rows = cur.fetchall() # liste des enregistrements avec un 2 place
+
+    ramassage0 = [(12 + i, 30) for i in range(6)]
+    ramassage1 = [(13 + i, 0) for i in range(6)]
+
+    parcours = []
+    for i in range(len(rows)): # tableau avec les horaires d'arrivée
+        rows[i][2] += 3 + rows[i][1]
+        if rows[i][1] == 0 :
+            parcours[0].append(rows[i])
+        else :
+            parcours[1].append(rows[i])
+        
+    sorted(parcours[0], key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
+    sorted(parcours[1], key=lambda x: (x[2], x[3])) 
+
+    j = 0
+    dict_parcours0 = {k:0 for k in range(len(ramassage0))}
+    for i in range(len(parcours[0])):
+        if parcours[0][i][2:3] <= ramassage0[j]:
+            dict_parcours0[j] += 1
+        else :
+            j += 1
+    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))]
+
+
+    j = 0
+    dict_parcours1 = {k:0 for k in range(len(ramassage1))}
+    for i in range(len(parcours[1])):
+        if parcours[1][i][2:3] <= ramassage1[j]:
+            dict_parcours1[j] += 1
+        else :
+            j += 1
+    resultat1 = [ramassage1[k] + (dict_parcours1[k],) for k in range(len(ramassage1))]
+
+    return (resultat0, resultat1) # de la forme ([facile], [avancé])
+    # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
 
 def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
-    #récupérer la difficulté puis évaluer le temps de trajet et l'ajouter à l'heure de départ
+    # copier la structure de retour_kayaks2places()
     ...
 
 
