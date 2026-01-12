@@ -55,3 +55,8 @@ def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int
 
 def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     ...
+
+
+
+con.commit()
+con.close()
