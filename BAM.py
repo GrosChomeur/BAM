@@ -3,8 +3,6 @@ from sqlite3 import *
 con = connect("BAM.db")
 cur = con.cursor()
 
-
-
 def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
     
     cur.execute("PRAGMA foreign_keys = ON") # Activer les clés étrangères
@@ -84,10 +82,24 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
     
     # --- Création de la table employe ---
     cur.execute("""
-    CREATE TABLE
+    CREATE TABLE IF NOT EXISTS employe(
+        id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
+        nom TEXT,
+        prenom TEXT
         )      
     """)
 
+    # --- Création de la table retour_kayak ---
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS retour_kayak(
+        id_retour INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE,
+        heure TIME,
+        id_employe INT REFERENCES employe(id_employe),
+        fin_parcours TEXT,
+        nb_de_kayak INT CHECK (nb_de_kayak <= 12)
+        )        
+    """)
 
 def id_kayak_insert():
     """surement pas utile mais c okay"""
