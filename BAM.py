@@ -161,6 +161,50 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     ramassage0 = [(12 + i, 30) for i in range(6)]
     ramassage1 = [(13 + i, 0) for i in range(6)]
 
+    parcours0 = [[]]
+    parcours1 = [[]]
+    for i in range(len(rows)): # tableau avec les horaires d'arrivée
+        rows[i][2] += 3 + rows[i][1]
+        if rows[i][1] == 0 :
+            parcours0.append(rows[i])
+        else :
+            parcours1.append(rows[i])
+        
+    sorted(parcours0, key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
+    sorted(parcours1, key=lambda x: (x[2], x[3])) 
+
+    j = 0
+    dict_parcours0 = {}
+    i = 0
+    while i < len(parcours0):
+        if parcours0[i][2:3] <= ramassage0[j]:
+            dict_parcours0[j] += 1
+            i += 1
+        else :
+            j += 1
+    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))]
+
+
+    j = 0
+    dict_parcours1 = {k:0 for k in range(len(ramassage1))}
+    for i in range(len(parcours1)):
+        if parcours1[i][2:3] <= ramassage1[j]:
+            dict_parcours1[j] += 1
+        else :
+            j += 1
+    resultat1 = [ramassage1[k] + (dict_parcours1[k],) for k in range(len(ramassage1))]
+
+    return (resultat0, resultat1) # de la forme ([facile], [avancé])
+    # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
+
+def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
+    # copier la structure de retour_kayaks2places()
+    cur.execute(f"SELECT nb_1place, parcours, h_depart, min_depart FROM location WHERE nb_1place > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
+    rows = cur.fetchall() # liste des enregistrements avec un 2 place
+
+    ramassage0 = [(12 + i, 30) for i in range(6)]
+    ramassage1 = [(13 + i, 0) for i in range(6)]
+
     parcours = []
     for i in range(len(rows)): # tableau avec les horaires d'arrivée
         rows[i][2] += 3 + rows[i][1]
@@ -193,10 +237,6 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
 
     return (resultat0, resultat1) # de la forme ([facile], [avancé])
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
-
-def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
-    # copier la structure de retour_kayaks2places()
-    ...
 
 
 
