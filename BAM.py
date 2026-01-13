@@ -25,7 +25,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         jour INT
         )
     """)
-    # --- Création de la table kayak ---
+    # --- Création de la table kayak --- PEUT-ETRE Enlever plus tard ? Pas forcément utile
     cur.execute("""
     CREATE TABLE IF NOT EXISTS kayak(
         id_kayak INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +38,9 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
     cur.execute("""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_kayak INT REFERENCES kayak(id_kayak),
+        id_kayak INT REFERENCES kayak(id_kayak), ---------------ID kayak ?
+        nb_1place INT,
+        nb_2places INT,
         id_parcours INT REFERENCES parcours(id_parcours),
         id_client INT REFERENCES client(id_client),
         date DATE,
@@ -160,7 +162,7 @@ def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     #cur.execute("INSERT INTO gnagngna ")
     
 
-def supprime_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
+def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
     """supprime une résa si elle est possible à supprimer"""
     # si resa est plus ancienne que la date -> on ne peut pas supprimer
 
