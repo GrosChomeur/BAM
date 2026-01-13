@@ -25,38 +25,27 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         jour INT
         )
     """)
-<<<<<<< HEAD
-    # --- Création de la table kayak --- PEUT-ETRE Enlever plus tard ? Pas forcément utile
-=======
-    
-    # --- Création de la table kayak ---
->>>>>>> 680747f62256d602d3ac20a6e7f0dff6ef977fab
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS kayak(
-        id_kayak INTEGER PRIMARY KEY AUTOINCREMENT,
-        type INT REFERENCES nb_kayak(type),
-        etat TEXT DEFAULT 'Disponible'
-        )
-    """)
+
     
     # --- Création de la table location ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_kayak INT REFERENCES kayak(id_kayak), ---------------ID kayak ?
         nb_1place INT,
         nb_2places INT,
-        id_parcours INT REFERENCES parcours(id_parcours),
+        parcours INT,
         id_client INT REFERENCES client(id_client),
-        date DATE,
-        heure_debut TIME,
-        heure_fin TIME,
-        heure_retour TIME,
+        a_depart INT,
+        m_depart INT,
+        j_depart INT,
+        h_depart INT,
+        min_depart INT
         )
     """)
     
     #Les dates sont de la forme : année-mois-jour
-    #Les heures sont de la forme : xx:xx
+    #Les heures sont de la forme : xx:xx 
+    # On travail avec des int sur chaques valeurs pour effectuer des comparaisons plus facilement avec les dates et heures stockées et passées en argument
     
     # --- Création de la table client ---
     cur.execute("""
@@ -64,41 +53,23 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         id_client INTEGER PRIMARY KEY AUTOINCREMENT,
         nom TEXT,
         prenom TEXT,
-        reservation BOOLEAN
+        reservation BOOLEAN -------------- est ce que c'est vrm utile ?
         )
     """)
     
-    # --- Création de la table parcours ---
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS parcours(
-        id_parcours INTEGER PRIMARY KEY AUTOINCREMENT,
-        nom_parcours TEXT,
-        distance INT,
-        depart TEXT,
-        arrivee TEXT
-        )
-    """)
     
-    # --- Création de la table nbkayak ---
+    '''# --- Création de la table nbkayak ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS nbkayak(
         type TEXT PRIMARY KEY,
         nombre INT CHECK (nombre <= 50)
         )       
-    """)
+    """)'''
     cur.execute("INSERT INTO date VALUES (2026,1,12)")
     
-    # --- Création de la table employe ---
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS employe(
-        id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
-        nom TEXT,
-        prenom TEXT
-        )      
-    """)
 
-    # --- Création de la table retour_kayak ---
-    cur.execute("""
+    # --- Création de la table retour_kayak --------------------- c pas utle vu qu'on le calcule
+    '''cur.execute("""
     CREATE TABLE IF NOT EXISTS retour_kayak(
         id_retour INTEGER PRIMARY KEY AUTOINCREMENT,
         date DATE,
@@ -108,7 +79,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         fin_parcours TEXT,
         nb_de_kayak INT CHECK (nb_de_kayak <= 12)
         )        
-    """)
+    """)'''
 
 def id_kayak_insert():
     """surement pas utile mais c okay"""
