@@ -23,7 +23,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
 
     
     # --- Création de la table location --- Il faut une table kayak où chaque kayak a un id et un type(simple ou double). Ca n'a pas de sens de le mettre dans une table location.
-    # La table location sert a savoir quel client (table client)  loue quoi (table kayak). Ces attributs auraient du sens dans une table 'boutique de location' pour qu'on puisse ensuite savoir si un client peut louer ou pas un kayak en fonction de sa disponibilité
+    # La table location sert a savoir quel client (table client)  loue quoi (table kayak). Ces attributs auraient du sens dans une table 'boutique de location'.
     cur.execute("""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -157,8 +157,8 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     ramassage0 = [(12 + i, 30) for i in range(6)]
     ramassage1 = [(13 + i, 0) for i in range(6)]
 
-    parcours0 = [[]]
-    parcours1 = [[]]
+    parcours0 = []
+    parcours1 = []
     for i in range(len(rows)): # tableau avec les horaires d'arrivée
         rows[i][2] += 3 + rows[i][1]
         if rows[i][1] == 0 :
@@ -170,7 +170,7 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     sorted(parcours1, key=lambda x: (x[2], x[3])) 
 
     j = 0
-    dict_parcours0 = {}
+    dict_parcours0 = {j:0}
     i = 0
     while i < len(parcours0):
         if parcours0[i][2:3] <= ramassage0[j]:
@@ -178,6 +178,7 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
             i += 1
         else :
             j += 1
+            dict_parcours0[j] = 0
     resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))]
 
 
