@@ -25,12 +25,17 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         jour INT
         )
     """)
+<<<<<<< HEAD
     # --- Création de la table kayak --- PEUT-ETRE Enlever plus tard ? Pas forcément utile
+=======
+    
+    # --- Création de la table kayak ---
+>>>>>>> 680747f62256d602d3ac20a6e7f0dff6ef977fab
     cur.execute("""
     CREATE TABLE IF NOT EXISTS kayak(
         id_kayak INTEGER PRIMARY KEY AUTOINCREMENT,
         type INT REFERENCES nb_kayak(type),
-        etat TEXT
+        etat TEXT DEFAULT 'Disponible'
         )
     """)
     
@@ -49,6 +54,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         heure_retour TIME,
         )
     """)
+    
     #Les dates sont de la forme : année-mois-jour
     #Les heures sont de la forme : xx:xx
     
@@ -76,8 +82,8 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
     # --- Création de la table nbkayak ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS nbkayak(
-        type TEXT INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre INT
+        type TEXT PRIMARY KEY,
+        nombre INT CHECK (nombre <= 50)
         )       
     """)
     cur.execute("INSERT INTO date VALUES (2026,1,12)")
@@ -97,7 +103,8 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         id_retour INTEGER PRIMARY KEY AUTOINCREMENT,
         date DATE,
         heure TIME,
-        id_employe INT REFERENCES employe(id_employe),
+        id_employe INT
+        FOREIGN KEY (id_employe) REFERENCES employe(id_employe),
         fin_parcours TEXT,
         nb_de_kayak INT CHECK (nb_de_kayak <= 12)
         )        
