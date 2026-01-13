@@ -25,6 +25,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         jour INT
         )
     """)
+    
     # --- Création de la table kayak ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS kayak(
@@ -47,6 +48,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         heure_retour TIME,
         )
     """)
+    
     #Les dates sont de la forme : année-mois-jour
     #Les heures sont de la forme : xx:xx
     
