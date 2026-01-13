@@ -148,7 +148,7 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
     cur.execute("SELECT * FROM date")
     
     if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
-        ...
+        cur.execute(f"DELETE FROM location WHERE id_location ={id_location}")
 
 
 
