@@ -28,7 +28,7 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
 
     
     # --- Création de la table location --- Il faut une table kayak où chaque kayak a un id et un type(simple ou double). Ca n'a pas de sens de le mettre dans une table location.
-    # La table location sert a savoir quel client (table client)  loue quoi (table kayak). Ces attributs auraient du sens dans une table 'boutique de location'.
+    # La table location sert a savoir quel client (table client)  loue quoi (table kayak). Ces attributs auraient du sens dans une table 'boutique de location' pour qu'on puisse ensuite savoir si un client peut louer ou pas un kayak en fonction de sa disponibilité
     cur.execute("""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
