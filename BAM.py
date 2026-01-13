@@ -8,14 +8,9 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
     cur.execute("PRAGMA foreign_keys = ON") # Activer les clés étrangères
     
     # --- Empêche plusieurs enregistrements ---
-    cur.execute("DROP TABLE IF EXISTS retour_kayak")
-    cur.execute("DROP TABLE IF EXISTS location")
-    cur.execute("DROP TABLE IF EXISTS kayak")
-    cur.execute("DROP TABLE IF EXISTS nb_kayak")
-    cur.execute("DROP TABLE IF EXISTS parcours")
-    cur.execute("DROP TABLE IF EXISTS employe")
-    cur.execute("DROP TABLE IF EXISTS client")
-    cur.execute("DROP TABLE IF EXISTS date")
+    tables = ['retour_kayak', 'location', 'kayak', 'nb_kayak', 'parcours', 'employe', 'client', 'date']
+    for e in tables :
+        cur.execute(f"DROP TABLE IF EXISTS {e}")
     
     # --- Création de la table date ---
     cur.execute("""
