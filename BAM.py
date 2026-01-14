@@ -77,16 +77,24 @@ def create_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_f
         )        
     """)'''
 
+
+    con.commit()
+
+
+
+
 def id_kayak_insert():
     """surement pas utile mais c okay"""
     cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 1) for i in range(1,51)])
     cur.executemany("INSERT INTO kayak VALUES (?)", [(i, 2) for i in range(51,101)])
+    con.commit()
 
 
 
 def date(j : int,  m : int, a : int) -> None :
     """update date dans la base de donnée"""
     cur.executemany("UPDATE table SET (?)", [(j, m, a)])
+    con.commit()
 
 
 def jour_suivant() -> tuple[int, int, int] :
@@ -126,18 +134,22 @@ def jour_suivant() -> tuple[int, int, int] :
 
 #jour_suivant()
 
-def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int, id_client) -> None :
+def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int, id_client) -> bool :
     """cherche si la résa est possible, si oui ajoute la résa"""
     check = kayak_dispo(j_depart, m_depart, a_depart, h_depart, min_depart, nb_1place, nb_2places, parcours)
     #check contient True si la réservation est possible.
-    if check:
+    if check :
         #verif si c possible
         cur.execute("SELECT * FROM date")
         if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
-            """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?"""
+            """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?
+            non c juste que c pas le but ici, on veut juste pas reserver pour une date passée, et je te rappelle qu'on a pas accès à l'heure actuelle dans la base de donnée
+            """
             #ajoute si possible
             cur.execute(f"""INSERT INTO location VALUES ({nb_1place},{nb_2places},{parcours},{id_client},
-                                                        {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})""")
+                                                        {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})""") # l'id_location est attribué automatiquement
+            con.commit()
+            return True # On return True si la réservation a été faite
     else:
         return False # On return False si la réservation n'est pas possible
 
@@ -152,6 +164,7 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
     
     if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
         cur.execute(f"DELETE FROM location WHERE id_location ={id_location}")
+        con.commit()
 
 
 
@@ -222,11 +235,24 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
         #min_depart doit probablement être modifiée comme h_depart, j'ai un peu de mal à voir comment pour l'instant
         # je comprend pas où tu veux aller mais c'est sûrement faux
     
+
+
+
+
+# j'ai essayé de trouver une méthode pour guider ton travail ---->
+
+
+
     cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
                 AND (h_depart < {h_depart} OR (h_depart = {h_depart} AND min_depart = {min_depart}))""")
     # on selectionne toutes les resa kayak une place et les somme
     # Donc 50 - cette somme = nb de kayak dispo sans ceux qui vont etre ramenés
     # c'est là où il faut utiliser retour_kayaks1place pour savoir combien de kayak vont etre ramenés avant l'heure de la nouvelle resa
+
+
+
+
+
 
     used_1 = cur.fetchall()
     #rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
