@@ -126,13 +126,18 @@ def jour_suivant() -> tuple[int, int, int] :
 
 #jour_suivant()
 
-def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None :
+def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int) -> None :
     """cherch si la résa est possible, si oui ajoute la résa"""
+    cur.execute(f"SELECT * FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} AND h_depart = {h_depart} AND min_depart = {min_depart}")
+    # ^ un début de truc on peut le virer
     #verif si c possible
     cur.execute("SELECT * FROM date")
     
     if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
-        ... #ajoute si possible 
+        """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?"""
+        #ajoute si possible
+        cur.execute(f"INSERT INTO location VALUES ({creer id location??},{nb_1place},{nb_2places},{parcours},{id_client},
+                                                    {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})")
     #cur.execute("INSERT INTO gnagngna ")
     
 
