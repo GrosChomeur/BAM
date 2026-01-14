@@ -128,20 +128,20 @@ def jour_suivant() -> tuple[int, int, int] :
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int) -> None :
     """cherche si la résa est possible, si oui ajoute la résa"""
-    cur.execute(f"SELECT * FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} AND h_depart = {h_depart} AND min_depart = {min_depart}")
-    check = cur.fetchall()
-
-
-    # ^ un début de truc on peut le virer
-    #verif si c possible
-    cur.execute("SELECT * FROM date")
-    
-    if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
-        """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?"""
-        #ajoute si possible
-        cur.execute(f"INSERT INTO location VALUES ({creer id location??},{nb_1place},{nb_2places},{parcours},{id_client},
-                                                    {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})")
+    check = kayak_dispo(j_depart, m_depart, a_depart, h_depart, min_depart, nb_1place, parcours, nb_1place, nb_2places, parcours)
+    #check contient True si la réservation est possible.
+    if check:
+        #verif si c possible
+        cur.execute("SELECT * FROM date")
+        if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
+            """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?"""
+            #ajoute si possible
+            cur.execute(f"""INSERT INTO location VALUES ({creer id location??},{nb_1place},{nb_2places},{parcours},{id_client},
+                                                        {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})""")
+    else:
+        ..."mettre ce qu'il se passe si c'est pas dispo."
     #cur.execute("INSERT INTO gnagngna ")
+
     
 
 def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
@@ -242,6 +242,23 @@ def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
 
     return (resultat0, resultat1) # de la forme ([facile], [avancé])
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
+
+
+
+def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
+    cur.execute(f"""SELECT nb_1place FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
+                AND h_depart > {h_depart-parcours} AND h_depart+{parcours} < {h_depart+parcours} AND min_depart = {min_depart}""")
+    #min_depart doit probablement être modifiée comme h_depart, j'ai un peu de mal à voir comment pour l'instant
+    used_1 = cur.fetchall()
+    #rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
+    cur.execute(f"""SELECT nb_2place FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
+                AND h_depart > {h_depart-parcours} AND h_depart+{parcours} < {h_depart+parcours} AND min_depart = {min_depart}""")
+    used_2 = cur.fetchall()
+    #dessous, observe si on peut utiliser les kayaks demandés en +.
+    if len(used_1)+nb_1place < 51 and len(used_2)+nb_2places<51:
+        return True
+    else:
+        return False
 
 
 
