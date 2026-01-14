@@ -368,3 +368,5 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
 #jour_suivant()
 #ajoute_resa(17, 1, 2026, 12, 30, 1, 1, 0, ajouter_client('Porlier', 'Baptiste'))
 
+con.commit()
+con.close()
