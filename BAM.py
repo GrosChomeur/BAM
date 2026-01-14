@@ -127,8 +127,11 @@ def jour_suivant() -> tuple[int, int, int] :
 #jour_suivant()
 
 def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int) -> None :
-    """cherch si la résa est possible, si oui ajoute la résa"""
+    """cherche si la résa est possible, si oui ajoute la résa"""
     cur.execute(f"SELECT * FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} AND h_depart = {h_depart} AND min_depart = {min_depart}")
+    check = cur.fetchall()
+
+
     # ^ un début de truc on peut le virer
     #verif si c possible
     cur.execute("SELECT * FROM date")
