@@ -126,9 +126,9 @@ def jour_suivant() -> tuple[int, int, int] :
 
 #jour_suivant()
 
-def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int) -> None :
+def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int, id_client) -> None :
     """cherche si la résa est possible, si oui ajoute la résa"""
-    check = kayak_dispo(j_depart, m_depart, a_depart, h_depart, min_depart, nb_1place, parcours, nb_1place, nb_2places, parcours)
+    check = kayak_dispo(j_depart, m_depart, a_depart, h_depart, min_depart, nb_1place, nb_2places, parcours)
     #check contient True si la réservation est possible.
     if check:
         #verif si c possible
@@ -136,11 +136,10 @@ def ajoute_resa(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
         if cur.fetchone() <= (a_depart, m_depart, j_depart) : # verif si la date est plus petite qua la date de la résa
             """On compare pas les heures ? C'est parce que l'heure est pas dans 'date' ?"""
             #ajoute si possible
-            cur.execute(f"""INSERT INTO location VALUES ({creer id location??},{nb_1place},{nb_2places},{parcours},{id_client},
+            cur.execute(f"""INSERT INTO location VALUES ({nb_1place},{nb_2places},{parcours},{id_client},
                                                         {a_depart},{m_depart},{j_depart},{h_depart},{min_depart})""")
     else:
-        ..."mettre ce qu'il se passe si c'est pas dispo."
-    #cur.execute("INSERT INTO gnagngna ")
+        return False # On return False si la réservation n'est pas possible
 
     
 
@@ -159,8 +158,9 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
 # On considère que l'employé commence à 12h30 par aller au point le plus proche, parcours facile, 0
 def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) : 
     """cherche les kayaks à ramasser et renvoie les horaires de ramassage et leur nombre"""
-    cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
-    rows = cur.fetchall() # liste des enregistrements avec un 2 place
+    #cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart} ORDER BY h_depart, min_depart")
+    #rows = cur.fetchall() # liste des enregistrements avec un 2 place
+    rows = [(3, 0, 12, 30), (1, 1, 13, 0)] # temporaire pour test sans base de donnée
 
     ramassage0 = [(12 + i, 30) for i in range(6)]
     ramassage1 = [(13 + i, 0) for i in range(6)]
@@ -174,8 +174,8 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
         else :
             parcours1.append(rows[i])
         
-    sorted(parcours0, key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
-    sorted(parcours1, key=lambda x: (x[2], x[3])) 
+    #sorted(parcours0, key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
+    #sorted(parcours1, key=lambda x: (x[2], x[3])) 
 
     j = 0
     dict_parcours0 = {j:0}
@@ -202,53 +202,32 @@ def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) :
     return (resultat0, resultat1) # de la forme ([facile], [avancé])
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
 
+
+
+
+
 def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
     # copier la structure de retour_kayaks2places()
     cur.execute(f"SELECT nb_1place, parcours, h_depart, min_depart FROM location WHERE nb_1place > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart}")
     rows = cur.fetchall() # liste des enregistrements avec un 2 place
-
-    ramassage0 = [(12 + i, 30) for i in range(6)]
-    ramassage1 = [(13 + i, 0) for i in range(6)]
-
-    parcours = []
-    for i in range(len(rows)): # tableau avec les horaires d'arrivée
-        rows[i][2] += 3 + rows[i][1]
-        if rows[i][1] == 0 :
-            parcours[0].append(rows[i])
-        else :
-            parcours[1].append(rows[i])
-        
-    sorted(parcours[0], key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
-    sorted(parcours[1], key=lambda x: (x[2], x[3])) 
-
-    j = 0
-    dict_parcours0 = {k:0 for k in range(len(ramassage0))}
-    for i in range(len(parcours[0])):
-        if parcours[0][i][2:3] <= ramassage0[j]:
-            dict_parcours0[j] += 1
-        else :
-            j += 1
-    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))]
-
-
-    j = 0
-    dict_parcours1 = {k:0 for k in range(len(ramassage1))}
-    for i in range(len(parcours[1])):
-        if parcours[1][i][2:3] <= ramassage1[j]:
-            dict_parcours1[j] += 1
-        else :
-            j += 1
-    resultat1 = [ramassage1[k] + (dict_parcours1[k],) for k in range(len(ramassage1))]
 
     return (resultat0, resultat1) # de la forme ([facile], [avancé])
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
 
 
 
-def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, parcours : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
+def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
     cur.execute(f"""SELECT nb_1place FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
                 AND h_depart > {h_depart-parcours} AND h_depart+{parcours} < {h_depart+parcours} AND min_depart = {min_depart}""")
-    #min_depart doit probablement être modifiée comme h_depart, j'ai un peu de mal à voir comment pour l'instant
+        #min_depart doit probablement être modifiée comme h_depart, j'ai un peu de mal à voir comment pour l'instant
+        # je comprend pas où tu veux aller mais c'est sûrement faux
+    
+    cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
+                AND (h_depart < {h_depart} OR (h_depart = {h_depart} AND min_depart = {min_depart}))""")
+    # on selectionne toutes les resa kayak une place et les somme
+    # Donc 50 - cette somme = nb de kayak dispo sans ceux qui vont etre ramenés
+    # c'est là où il faut utiliser retour_kayaks1place pour savoir combien de kayak vont etre ramenés avant l'heure de la nouvelle resa
+
     used_1 = cur.fetchall()
     #rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
     cur.execute(f"""SELECT nb_2place FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
