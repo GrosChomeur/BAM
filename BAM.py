@@ -170,52 +170,60 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
 
 # On considère que l'employé commence à 12h30 par aller au point le plus proche, parcours facile, 0
 def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) : 
+
+# fonctionnelle mais à tester avec la base de donnée
+
+
     """cherche les kayaks à ramasser et renvoie les horaires de ramassage et leur nombre"""
     #cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart} ORDER BY h_depart, min_depart")
     #rows = cur.fetchall() # liste des enregistrements avec un 2 place
-    rows = [(3, 0, 12, 30), (1, 1, 13, 0)] # temporaire pour test sans base de donnée
+    rows = [(3, 0, 14, 55), (1, 1, 13, 1)] # temporaire pour test sans base de donnée
 
     ramassage0 = [(12 + i, 30) for i in range(6)]
     ramassage1 = [(13 + i, 0) for i in range(6)]
 
     parcours0 = []
     parcours1 = []
-    for i in range(len(rows)): # tableau avec les horaires d'arrivée
-        rows[i][2] += 3 + rows[i][1]
-        if rows[i][1] == 0 :
+    for i in range(len(rows)): # tableaux avec les horaires d'arrivée pour chaque parcours
+        row = list(rows[i])
+        row[2] += 3 + row[1]
+        if row[1] == 0 :
             parcours0.append(rows[i])
         else :
             parcours1.append(rows[i])
         
-    #sorted(parcours0, key=lambda x: (x[2], x[3])) # tri par heure et minute peut-etre à optimiser ou a faire nous meme
+    #sorted(parcours0, key=lambda x: (x[2], x[3])) # a supprimer si tout fonctionne bien
     #sorted(parcours1, key=lambda x: (x[2], x[3])) 
 
     j = 0
-    dict_parcours0 = {j:0}
+    dict_parcours0 = {k:0 for k in range(len(ramassage0))}
     i = 0
     while i < len(parcours0):
-        if parcours0[i][2:3] <= ramassage0[j]:
-            dict_parcours0[j] += 1
+        if parcours0[i][2:4] <= ramassage0[j]:
+            dict_parcours0[j] += parcours0[i][0]
             i += 1
         else :
             j += 1
-            dict_parcours0[j] = 0
-    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))]
+
+    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))] 
 
 
     j = 0
-    dict_parcours1 = {k:0 for k in range(len(ramassage1))}
-    for i in range(len(parcours1)):
-        if parcours1[i][2:3] <= ramassage1[j]:
-            dict_parcours1[j] += 1
+    dict_parcours1 = {k:0 for k in range(len(ramassage0))}
+    i = 0
+    while i < len(parcours1):
+        if parcours1[i][2:4] <= ramassage1[j]:
+            dict_parcours1[j] += parcours1[i][0]
+            i += 1
         else :
             j += 1
+            dict_parcours1[j] = 0
     resultat1 = [ramassage1[k] + (dict_parcours1[k],) for k in range(len(ramassage1))]
 
     return (resultat0, resultat1) # de la forme ([facile], [avancé])
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
 
-
+print(retour_kayaks2places(12,1,2026))
 
 
 
