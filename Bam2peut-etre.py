@@ -23,7 +23,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
         min_ouverture INT,
         h_fermeture INT,
         min_fermeture INT,
-        stock_1place INT CHECK (stock_1place <= 50), -----Max 50 kayaks de chaque type -----
+        stock_1place INT CHECK (stock_1place <= 50), -----Max 50 kayaks de chaque type-----
         stock_2place INT CHECK (stock_2place <= 50)
         )
     """)
@@ -414,3 +414,4 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
 
 con.commit()
 con.close()
+
