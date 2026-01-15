@@ -377,11 +377,12 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
 
 
 
-    #rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
+    # rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
     cur.execute(f"""SELECT SUM(nb_2place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
     used_2 = cur.fetchall()
-    #dessous, observe si on peut utiliser les kayaks demandés en +.
-    if len(used_1)+nb_1place < 51 and len(used_2)+nb_2places<51:
+
+    # dessous, observe si on peut utiliser les kayaks demandés en +.
+    if used_1[0] + nb_1place <= 50 and used_2[0] + nb_2places <= 50:
         return True
     else:
         return False
