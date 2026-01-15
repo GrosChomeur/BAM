@@ -1,9 +1,5 @@
 import sqlite3
-#POURQUOI CE FICHIER : 
-#Pour moi la base de données est pas adaptée, il manque une table pour qu'on puisse identifier chaque kayak.
-#J'ai rien fait et rien dit parce que le code qui à été fait est construit sur une base de données et donc impossible de modifier la base sans casser le code (je me suis rendu compte trop tard que vous aviez fait le travail super vite)
-#Je vous propose donc cette base de données qui me semble plus adaptée si elle vous convient pas tant pis on garde l'autre.
-#J'ai repris vos fonctions sur l'autre fichier et j'ai corrigé les erreurs que j'ai vues et je les ai adaptées à cette nouvelle base.
+
 con = sqlite3.connect("BAM.db")
 cur = con.cursor()
 
@@ -414,4 +410,5 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
 
 con.commit()
 con.close()
+
 
