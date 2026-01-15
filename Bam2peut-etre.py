@@ -367,21 +367,18 @@ def retour_kayaks1place(j_depart : int, m_depart : int, a_depart : int) :
     # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
     
 def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
-    cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
-                AND (h_depart < {h_depart} OR (h_depart = {h_depart} AND min_depart = {min_depart}))""")
+    cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
     # on selectionne toutes les resa kayak une place et les somme
     # Donc 50 - cette somme = nb de kayak dispo sans ceux qui vont etre ramenés
     # c'est là où il faut utiliser retour_kayaks1place pour savoir combien de kayak vont etre ramenés avant l'heure de la nouvelle resa
-
-
-
-
-
-
     used_1 = cur.fetchall()
+
+
+
+
+
     #rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
-    cur.execute(f"""SELECT nb_2place FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart} 
-                AND h_depart > {h_depart-parcours} AND h_depart+{parcours} < {h_depart+parcours} AND min_depart = {min_depart}""")
+    cur.execute(f"""SELECT SUM(nb_2place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
     used_2 = cur.fetchall()
     #dessous, observe si on peut utiliser les kayaks demandés en +.
     if len(used_1)+nb_1place < 51 and len(used_2)+nb_2places<51:
