@@ -4,6 +4,9 @@ con = sqlite3.connect("BAM.db")
 cur = con.cursor()
 
 def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
+    """
+    Initialise la base de données avec les tables nécessaires pour la gestion des locations de kayaks.
+    """
     #Active les clés étrangères
     cur.execute("PRAGMA foreign_keys = ON")
     
@@ -19,7 +22,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
         min_ouverture INT,
         h_fermeture INT,
         min_fermeture INT,
-        stock_1place INT CHECK (stock_1place <= 50), -----Max 50 kayaks de chaque type-----
+        stock_1place INT CHECK (stock_1place <= 50),
         stock_2place INT CHECK (stock_2place <= 50)
         )
     """)
@@ -48,25 +51,6 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
         )
     """)
 
-    # --- Création de la table kayak ---
-    #On identifie chaque kayak pour mieux les gérer 
-
-    ######################## On a pas du tout besoin de les gérer individuellement, donc je sais pas si c utile ##########################
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS kayak(
-        id_kayak INTEGER PRIMARY KEY AUTOINCREMENT,
-        type INT,
-        etat TEXT DEFAULT 'disponible' ------------------- on fait pas de la gestion en live des nombres de kayaks dispo
-        )
-    """)
-    
-    #On remplie la table kayak avec les infos passées en paramètre de la fonction
-    for _ in range(nb_1place):
-        cur.execute("INSERT INTO kayak(type) VALUES (1)")
-    for _ in range(nb_2places):
-        cur.execute("INSERT INTO kayak(type) VALUES (2)")
-
 
 
     # --- Création de la table location ---
@@ -77,7 +61,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
         id_client INT REFERENCES client(id_client),
         nb_1place INT CHECK (nb_1place >= 0),
         nb_2places INT CHECK (nb_2places >= 0),
-        parcours INT CHECK (parcours IN (0, 1)), -----0 pour débutant et 1 pour avancé
+        parcours INT CHECK (parcours IN (0, 1)),
         a_depart INT, 
         m_depart INT, 
         j_depart INT,
@@ -169,28 +153,28 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     """
     Ajoute la location dans la base de données si elle est correcte.
     """
-    #Vérification de la cohérence de la date
+    # Vérification de la cohérence de la date
     cur.execute("""SELECT annee, mois, jour FROM calendrier""")
     a_actu, m_actu, j_actu = cur.fetchone()
     if (a_depart, m_depart, j_depart) < (a_actu, m_actu, j_actu): # <= ? on veut accepter les réservations pour le jour même ?
         print("Réservation impossible")
         return
 
-    #Vérification de l'heure de départ en fonction du parcours
-    if parcours == 0 and h_depart > 15 : # si 15h00 ?          ... and (h_depart > 15 or (h_depart == 15 and min_depart > 0))
+    # Vérification de l'heure de départ en fonction du parcours
+    if parcours == 0 and h_depart > 14 : # si 15h00 ?          ... and (h_depart > 15 or (h_depart == 15 and min_depart > 0))
         print("Parcours de 6km non autorisé après 15h")
         return
-    elif parcours == 1 and h_depart > 14: # si 14h00 ?          ... and (h_depart > 14 or (h_depart == 14 and min_depart > 0))
+    elif parcours == 1 and h_depart > 13 : # si 14h00 ?          ... and (h_depart > 14 or (h_depart == 14 and min_depart > 0))
         print("Parcours de 10km non autorisé après 14h")
         return
 
-    #Vérification de l'id du client
+    # Vérification de l'id du client
     cur.execute("""SELECT id_client FROM client WHERE id_client = ?""", (id_client,))
     if cur.fetchone() is None:
         print(f"Le client numéro : {id_client} n'existe pas.")
         return
 
-    #Vérification du stock de la JOURNEE (on peut prendre au max 100 réservé logiquement)
+    # Vérification du stock de la JOURNEE (on peut prendre au max 100 kayaks réservés logiquement)
     cur.execute("""
         SELECT SUM(nb_1place), SUM(nb_2places) 
         FROM location 
@@ -209,6 +193,7 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         print("Réservation impossible, pas assez de kayaks disponibles")
         return
 
+
     # Insertion de la réservation
     cur.execute("""
         INSERT INTO location (id_client, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -221,17 +206,9 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
     Supprime une location si la date n'a pas été dépassée
     """
 
-    # est-ce que la réservation existe
-    cur.execute(f"""SELECT * FROM location WHERE id_location = {id_location}""")
-    if cur.fetchone() is None :
-        print("Cette réservation n'existe pas")
-        return
-
-    # est-ce que on considère que l'on peut supprimer une réservation le jour même ?
-
     # Si location est plus ancienne que la date -> On ne peut pas la supprimer
     cur.execute("""SELECT * FROM calendrier""")
-    if cur.fetchone() <= (a_depart, m_depart, j_depart) : #Verifie si la date est plus petite qua la date de la location
+    if cur.fetchone() < (a_depart, m_depart, j_depart) : #Verifie si la date est strictement plus petite que la date de la location
         cur.execute(f"""DELETE FROM location WHERE id_location = {id_location}""")
         con.commit()
         print("Réservation supprimée")
