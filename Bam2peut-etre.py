@@ -390,12 +390,10 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
         return False
         
         
-#creer_base(9,00,18,00,50,50) #Création de la base de données en fonction des consignes.
-#date(14, 1, 2026)
-#jour_suivant()
-#ajoute_resa(17, 1, 2026, 12, 30, 1, 1, 0, ajouter_client('Porlier', 'Baptiste'))
+
 
 con.commit()
 con.close()
+
 
 
