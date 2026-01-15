@@ -129,6 +129,9 @@ def ajouter_client(nom: str, prenom: str) -> int:
     """
     # On cherche si client il y a
     cur.execute("SELECT id_client FROM client WHERE nom = ? AND prenom = ?", (nom, prenom))
+
+# AJOUT(?) : adresse email pour prénoms pareils
+
     resultat = cur.fetchone()
     # Si le client existe deja (On considère que 2 personnes n'ont pas le même nom et prenom...)
     if resultat is not None:
@@ -337,9 +340,6 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     # Donc 50 - cette somme = nb de kayak dispo sans ceux qui vont etre ramenés
     # c'est là où il faut utiliser retour_kayaks1place pour savoir combien de kayak vont etre ramenés avant l'heure de la nouvelle resa
     used_1 = cur.fetchall()
-
-
-
 
 
     # rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
