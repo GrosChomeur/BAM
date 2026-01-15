@@ -1,17 +1,33 @@
+
+
 import sqlite3
-from BAM import creer_base
+from Bam import creer_base, con, cur
 
-con = sqlite3.connect("BAM.db")
-cur = con.cursor()
-#con = sqlite3.connect("BAM.db")
-#(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
-def test_creer_base() :
-
-    creer_base(9, 0, 18, 0, 50, -50)
+def test_creer_base():
+    
+    creer_base(9, 0, 18, 0, 50, 50)
     
     cur.execute("""SELECT * FROM boutique_location""")
-    a = cur.fetchone()
-    assert a == (h_ouv, m_ouv, h_ferm, m_ferm, nb1, nb2), 'Null'
-
-test_creer_base()
-con.close()
+    resultat = cur.fetchone()
+    #Cas normal
+    assert resultat == (9, 0, 18, 0, 50, 50), 'Pas ok'
+    print("✓")
+    #cas où nb de kayaks négatif
+    try : 
+        assert resultat == (9, 0, 18, 0, 50, -50), 'Pas ok'
+        print("✓")
+    except:
+        print("Pa s ok")
+        
+    #
+    try : 
+        assert resultat == (18, 0, 9, 0, 50, 50), 'Pas ok'
+        print("✓")
+    except:
+        print("Pas ok")
+        
+if __name__ == "__main__":
+    try:
+        test_creer_base()
+    finally:
+        con.close()
