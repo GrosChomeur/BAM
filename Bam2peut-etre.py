@@ -197,13 +197,15 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         WHERE a_depart = ? AND m_depart = ? AND j_depart = ?""", 
         (a_depart, m_depart, j_depart))
     resultat = cur.fetchone()
+
     # Verification de valeurs None
     if resultat[0] is None:
-        resultat[0] = 0
+        resultat = (0, resultat[1])
     if resultat[1] is None:
-        resultat[1] = 0
+        resultat = (resultat[0], 0)
+
     # Comparaison avec le stock total
-    if resultat[0] < nb_1place or resultat[1] < nb_2places:
+    if (50 - resultat[0] < nb_1place) or (50 - resultat[1] < nb_2places):
         print("Réservation impossible, pas assez de kayaks disponibles")
         return
 
