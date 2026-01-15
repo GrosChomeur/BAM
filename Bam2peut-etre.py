@@ -55,7 +55,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
 
     # --- Création de la table location ---
     # Ajout du parcours pour les calculs de retour
-    cur.execute("""
+    cur.execute(f"""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
         id_client INT REFERENCES client(id_client),
@@ -65,7 +65,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
         a_depart INT, 
         m_depart INT, 
         j_depart INT,
-        h_depart INT CHECK (h_depart >= 9 AND h_depart <= 15),
+        h_depart INT CHECK (h_depart >= {h_ouverture} AND h_depart <= {h_fermeture}-3),
         min_depart INT CHECK (min_depart >= 0 AND min_depart < 60)
         )
     """)
@@ -99,14 +99,14 @@ def jour_suivant() -> tuple[int, int, int] :
     if a % 4 == 0 :
         if m in [1,3,5,7,8,10,12] : #erreurs dans le premier fichier python sur les mois à 31 #### les mois a 31 jours sont [1,3,5,7,8,10,12], dit moi si je me trompe
             max_j = 31
-        if m == 2 :
+        elif m == 2 :
             max_j = 29
         else :
             max_j = 30
     else :
         if m in [1,3,5,7,8,10,12] :
             max_j = 31
-        if m == 2 :
+        elif m == 2 :
             max_j = 28
         else :
             max_j = 30
