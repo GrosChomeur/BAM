@@ -15,6 +15,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     for e in tables:
         cur.execute(f"DROP TABLE IF EXISTS {e}")
     
+
     # --- Création de la table boutique_location ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS boutique_location(
@@ -30,9 +31,8 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     cur.execute("INSERT INTO boutique_location VALUES (?, ?, ?, ?, ?, ?)", (h_ouverture, min_ouverture, h_fermeture, min_fermeture, nb_1place, nb_2places))
 
     # --- Création de la table calendrier ---
-    #On initialise en 01/01/2026 ?
-    # g fait ca au pif 
-    # C'est dangereux d'appeler une table 'date' sachant que date est un type en SQLite. ------------- Vrai j'y avait pas réflechi
+    #On initialise en 01/01/2026 arbitrairement
+    
     cur.execute("""
     CREATE TABLE IF NOT EXISTS calendrier( 
         annee INT,
@@ -42,7 +42,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     """)
     cur.execute("INSERT INTO calendrier VALUES (2026, 1, 1)")
 
-    # --- Création de la table client --- ------------------ je ne sais pas si on doit s'occuper de la partie gestion des clients mais je suis d'accord que c'est important
+    # --- Création de la table client ---
     cur.execute("""
     CREATE TABLE IF NOT EXISTS client(
         email TEXT PRIMARY KEY,
@@ -71,7 +71,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     con.commit()
     print("Base de données initialisée")
     
-#creer_base(9,00,18,00,50,50)
+
 
 def date(j: int, m: int, a: int) -> None:
     """
@@ -82,9 +82,10 @@ def date(j: int, m: int, a: int) -> None:
                 a (int): Année de la date 
     """
     cur.execute("""UPDATE calendrier SET jour = ?, mois = ?, annee = ?""", (j, m, a))
+    print(f"Date mise à jour : {j}/{m}/{a}")
     con.commit()
 
-#date(14, 1, 2026)
+
 
 def jour_suivant() -> tuple[int, int, int] :
     """
@@ -119,10 +120,9 @@ def jour_suivant() -> tuple[int, int, int] :
         j = 1
     else :
         j += 1
-        
-    cur.execute("""UPDATE calendrier SET jour = ?, mois = ?, annee = ?""", (j, m, a))
-    con.commit()
-    
+
+    return (j, m, a)
+
 
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     """
@@ -141,6 +141,7 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     else:
         cur.execute("INSERT INTO client (email, nom, prenom) VALUES (?, ?, ?)", (email, nom, prenom)) # On ajoute le client
         con.commit()
+        print("Client", prenom, nom, "ajouté")
         return False
     
         # cur.execute("SELECT id_client FROM client WHERE nom = ? AND prenom = ?", (nom, prenom))
@@ -152,6 +153,12 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     """
     Ajoute la location dans la base de données si elle est correcte.
     """
+    #print(h_depart, min_depart, nb_1place, nb_2places, parcours)
+
+    # Vérification du nombre de kayaks demandés
+    if nb_1place < 0 or nb_2places < 0 or (nb_1place == 0 and nb_2places == 0):
+        print("Réservation impossible, nombre de kayaks invalide")
+        return
 
     # Verification de la validité de la date
     if m_depart < 1 or m_depart > 12 or j_depart < 1 or j_depart > 31 : # vérification par rapport aux mois ??
@@ -252,7 +259,7 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         INSERT INTO location (email, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (email_client, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart))
     con.commit()
-    print("Réservation prise en compte")
+    print("Réservation par", email_client, "prise en compte")
     
 
 
@@ -290,9 +297,9 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     
     rows = cur.fetchall()
     #L'employé passe toutes les 30 min
-    #Fin du parcours 0 : 12h30, 13h30...
+    #Fin du parcours 0 : 12h30, 13h30..., 18h30
     ramassage0 = [(12 + i, 30) for i in range(7)]   # on rajoute un passage de l'employé à 18h30 et 19h pour ramasser les kayaks arrivant après 17h30 et 18h
-    #Fin du parcours 1 : 13h00, 14h00...
+    #Fin du parcours 1 : 13h00, 14h00..., 19h00
     ramassage1 = [(13 + i, 0) for i in range(7)]
 
     parcours0 = []
@@ -303,9 +310,9 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
         row = list(rows[i])
         row[2] += 3 + row[1]
         if row[1] == 0 :
-            parcours0.append(rows[i])
+            parcours0.append(tuple(row))
         else :
-            parcours1.append(rows[i])
+            parcours1.append(tuple(row))
 
 
     # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 0 
@@ -314,6 +321,7 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours0) and j < len(ramassage0):
         if parcours0[i][2:4] <= ramassage0[j]:
+            # print(parcours0[i][2:4], "<=", ramassage0[j])
             dict_parcours0[j] += parcours0[i][0]
             i += 1
         else :
@@ -366,10 +374,9 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
         row = list(rows[i])
         row[2] += 3 + row[1]
         if row[1] == 0 :
-            parcours0.append(rows[i])
+            parcours0.append(tuple(row))
         else :
-            parcours1.append(rows[i])
-    
+            parcours1.append(tuple(row))
 
     # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 0
     j = 0
@@ -477,7 +484,23 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     else:
         return False
 
-#creer_base(9, 0, 18, 0, 50, 50)  
+creer_base(9, 0, 18, 0, 50, 50) 
+a,m,j = jour_suivant()
+date(a,m,j)
+ajouter_client("test@gmail.com", "Dick", "John")
+ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "test@gmail.com")
+print(retour_kayaks1place(14, 1, 2026))
+print(retour_kayaks2places(14, 1, 2026))
+
+"""for i in range(60):
+    a,m,j = jour_suivant()
+    date(a,m,j)""" # test jour_suivant et date
+
+from random import randint
+
+for i in range(15):
+    ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "test@gmail.com")
+
 
 if __name__ == "__main__":
     con.commit()
