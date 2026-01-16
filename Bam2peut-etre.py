@@ -151,7 +151,7 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
 
 def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_depart: int, nb_1place: int, nb_2places: int, parcours: int, email_client: str) -> None:
     """
-    Ajoute la location dans la base de données si elle est correcte.
+    Ajoute la location dans la base de données si elle est valide
     """
     #print(h_depart, min_depart, nb_1place, nb_2places, parcours)
 
