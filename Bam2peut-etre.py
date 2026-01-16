@@ -153,7 +153,7 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     """
     Ajoute la location dans la base de données si elle est valide
     """
-    #print(h_depart, min_depart, nb_1place, nb_2places, parcours)
+    print(h_depart, "h", min_depart, ",", nb_1place, "une place,", nb_2places, "deux places,", f"parcours {parcours}")
 
     # Vérification du nombre de kayaks demandés
     if nb_1place < 0 or nb_2places < 0 or (nb_1place == 0 and nb_2places == 0):
@@ -186,6 +186,8 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         print(f"Le client avec l'email : {email_client} n'existe pas.")
         return
 
+
+
     # Vérification du stock de la JOURNEE (on peut prendre au max 100 kayaks réservés logiquement)
     cur.execute("""
         SELECT SUM(nb_1place), SUM(nb_2places) 
@@ -201,9 +203,9 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         resultat = (resultat[0], 0)
     
     # Comparaison avec le stock total
-    if (50 - resultat[0] < nb_1place) or (50 - resultat[1] < nb_2places):
+    """if (50 - resultat[0] < nb_1place) or (50 - resultat[1] < nb_2places):
         print("Réservation impossible, pas assez de kayaks disponibles")
-        return
+        return"""
 
     # fin vérification stock pour une journée
 
@@ -226,28 +228,43 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         resultat_retours = (resultat_retours[0], 0)
 
     # Liste de tuples (heure, minute, nb_kayaks à ramasser) : [(12,30,nb), (13,30,nb), ...]
-    rk2p = retour_kayaks2places(j_depart, m_depart, a_depart)[parcours]
-    rk1p = retour_kayaks1place(j_depart, m_depart, a_depart)[parcours]
+    rk2p = retour_kayaks2places(j_depart, m_depart, a_depart)
+    rk1p = retour_kayaks1place(j_depart, m_depart, a_depart)
+    print(f"{rk1p=}")
+    print(f"{rk2p=}")
+
 
     # Calcul du nombre de kayaks 1 places ramenés avant l'heure de départ
     S1=0
     i = 0
-    while (h_depart, min_depart) > (rk1p[i][0], rk1p[i][1]) and i < len(rk1p):
-        S1 += rk1p[i][2]
+    # parcours 0
+    while (h_depart, min_depart) > (rk1p[0][i][0], rk1p[0][i][1]) and i < len(rk1p[0]):
+        S1 += rk1p[0][i][2]
+        i += 1
+    # parcours 1
+    while (h_depart, min_depart) > (rk1p[1][i][0], rk1p[1][i][1]) and i < len(rk1p[1]):
+        S1 += rk1p[1][i][2]
         i += 1
 
     # Calcul du nombre de kayaks 2 place ramenés avant l'heure de départ
     S2=0
     i = 0
-    while (h_depart, min_depart) > (rk2p[i][0], rk2p[i][1]) and i < len(rk2p):
-        S2 += rk2p[i][2]
+    # parcours 0
+    while (h_depart, min_depart) > (rk2p[0][i][0], rk2p[0][i][1]) and i < len(rk2p[0]):
+        S2 += rk2p[0][i][2]
+        i += 1
+    # parcours 1
+    while (h_depart, min_depart) > (rk2p[1][i][0], rk2p[1][i][1]) and i < len(rk2p[1]):
+        S2 += rk2p[1][i][2]
         i += 1
     
 
+    print((50 + S1 - resultat[0] < nb_1place), f"{S1=}, {nb_1place=}, {resultat[0]=}")
+    print((50 + S2 - resultat[1] < nb_2places), f"{S2=}, {nb_2places=}, {resultat[1]=}")
     # On ajoute les kayaks ramenés avant l'heure de départ
     # Comparaison avec le stock total
     if (50 + S1 - resultat[0] < nb_1place) or (50 + S2 - resultat[1] < nb_2places):
-        print("Réservation impossible, pas assez de kayaks disponibles")
+        print("Réservation impossible, pas assez de kayaks disponibles\n")
         return
 
 
@@ -259,7 +276,7 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         INSERT INTO location (email, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (email_client, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart))
     con.commit()
-    print("Réservation par", email_client, "prise en compte")
+    print("Réservation par", email_client, "prise en compte\n")
     
 
 
@@ -321,8 +338,22 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours0) and j < len(ramassage0):
         if parcours0[i][2:4] <= ramassage0[j]:
-            # print(parcours0[i][2:4], "<=", ramassage0[j])
-            dict_parcours0[j] += parcours0[i][0]
+            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage:
+                temp = 12 - dict_parcours0[j]
+                nb_reste = parcours0[i][0] - temp
+
+                if nb_reste >= 12:
+                    while nb_reste >= 12:
+                        dict_parcours0[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours0[j] = nb_reste
+                else:
+                    dict_parcours0[j+1] += nb_reste
+                    dict_parcours0[j] = 12
+                    j+=1
+            else:
+                dict_parcours0[j] += parcours0[i][0]
             i += 1
         else :
             j += 1
@@ -336,7 +367,22 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours1) and j < len(ramassage1):
         if parcours1[i][2:4] <= ramassage1[j]:
-            dict_parcours1[j] += parcours1[i][0]
+            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage:
+                temp = 12 - dict_parcours1[j]
+                nb_reste = parcours1[i][0] - temp
+
+                if nb_reste >= 12:
+                    while nb_reste >= 12:
+                        dict_parcours1[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours1[j] = nb_reste
+                else:
+                    dict_parcours1[j+1] += nb_reste
+                    dict_parcours1[j] = 12
+                    j+=1
+            else:
+                dict_parcours1[j] += parcours1[i][0]
             i += 1
         else :
             j += 1
@@ -384,7 +430,22 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours0) and j < len(ramassage0):
         if parcours0[i][2:4] <= ramassage0[j]:
-            dict_parcours0[j] += parcours0[i][0]
+            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage:
+                temp = 12 - dict_parcours0[j]
+                nb_reste = parcours0[i][0] - temp
+
+                if nb_reste >= 12:
+                    while nb_reste >= 12:
+                        dict_parcours0[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours0[j] = nb_reste
+                else:
+                    dict_parcours0[j+1] += nb_reste
+                    dict_parcours0[j] = 12
+                    j+=1
+            else:
+                dict_parcours0[j] += parcours0[i][0]
             i += 1
         else :
             j += 1
@@ -398,7 +459,22 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours1) and j < len(ramassage1):
         if parcours1[i][2:4] <= ramassage1[j]:
-            dict_parcours1[j] += parcours1[i][0]
+            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage:
+                temp = 12 - dict_parcours1[j]
+                nb_reste = parcours1[i][0] - temp
+
+                if nb_reste >= 12:
+                    while nb_reste >= 12:
+                        dict_parcours1[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours1[j] = nb_reste
+                else:
+                    dict_parcours1[j+1] += nb_reste
+                    dict_parcours1[j] = 12
+                    j+=1
+            else:
+                dict_parcours1[j] += parcours1[i][0]
             i += 1
         else :
             j += 1
@@ -488,9 +564,11 @@ creer_base(9, 0, 18, 0, 50, 50)
 a,m,j = jour_suivant()
 date(a,m,j)
 ajouter_client("test@gmail.com", "Dick", "John")
-ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "test@gmail.com")
-print(retour_kayaks1place(14, 1, 2026))
-print(retour_kayaks2places(14, 1, 2026))
+
+print("\n--- Tests ---\n")
+#ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "test@gmail.com")
+#print(retour_kayaks1place(14, 1, 2026))
+#print(retour_kayaks2places(14, 1, 2026))
 
 """for i in range(60):
     a,m,j = jour_suivant()
@@ -498,9 +576,12 @@ print(retour_kayaks2places(14, 1, 2026))
 
 from random import randint
 
-for i in range(15):
-    ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "test@gmail.com")
-
+ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 0, "test@gmail.com")
+ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 1, "test@gmail.com")
+ajoute_resa(7, 2, 2026, 12, 45, 10, 10, 1, "test@gmail.com")
+"""for i in range(15):
+    ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "test@gmail.com")"""
+#ajoute_resa(7, 2, 2026, 14, 0, 12, 12, 0, "test@gmail.com")
 
 if __name__ == "__main__":
     con.commit()
