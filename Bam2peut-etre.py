@@ -342,7 +342,9 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
 
-                if nb_reste >= 12:
+                if nb_reste > 0 :
+                    dict_parcours0[j] = 12
+                    j += 1
                     while nb_reste >= 12:
                         dict_parcours0[j] = 12
                         j += 1
@@ -371,7 +373,9 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
 
-                if nb_reste >= 12:
+                if nb_reste > 0:
+                    dict_parcours1[j] = 12
+                    j += 1
                     while nb_reste >= 12:
                         dict_parcours1[j] = 12
                         j += 1
@@ -434,7 +438,9 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
 
-                if nb_reste >= 12:
+                if nb_reste > 0:
+                    dict_parcours0[j] = 12
+                    j += 1
                     while nb_reste >= 12:
                         dict_parcours0[j] = 12
                         j += 1
@@ -463,7 +469,9 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
 
-                if nb_reste >= 12:
+                if nb_reste > 0:
+                    dict_parcours1[j] = 12
+                    j += 1
                     while nb_reste >= 12:
                         dict_parcours1[j] = 12
                         j += 1
@@ -485,62 +493,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
 
 
 
-# --- A arranger ---       
-# def retour_kayaks2places(j_depart : int, m_depart : int, a_depart : int) : 
-#
-## fonctionnelle mais à tester avec la base de donnée
-#
-#
-#    """cherche les kayaks à ramasser et renvoie les horaires de ramassage et leur nombre"""
-#    #cur.execute(f"SELECT nb_2places, parcours, h_depart, min_depart FROM location WHERE nb_2places > 0 AND a_depart = {a_depart} AND m_depart = {m_depart} AND j_depart = {j_depart} ORDER BY h_depart, min_depart")
-#    #rows = cur.fetchall() # liste des enregistrements avec un 2 place
-#    rows = [(3, 0, 14, 55), (1, 1, 13, 1)] # temporaire pour test sans base de donnée
-#
-#    ramassage0 = [(12 + i, 30) for i in range(6)]
-#    ramassage1 = [(13 + i, 0) for i in range(6)]
-#
-#    parcours0 = []
-#    parcours1 = []
-#    for i in range(len(rows)): # tableaux avec les horaires d'arrivée pour chaque parcours
-#        row = list(rows[i])
-#        row[2] += 3 + row[1]
-#        if row[1] == 0 :
-#            parcours0.append(rows[i])
-#        else :
-#            parcours1.append(rows[i])
-#        
-#    #sorted(parcours0, key=lambda x: (x[2], x[3])) # a supprimer si tout fonctionne bien
-#    #sorted(parcours1, key=lambda x: (x[2], x[3])) 
-#
-#    j = 0
-#    dict_parcours0 = {k:0 for k in range(len(ramassage0))}
-#    i = 0
-#    while i < len(parcours0):
-#        if parcours0[i][2:4] <= ramassage0[j]:
-#            dict_parcours0[j] += parcours0[i][0]
-#            i += 1
-#        else :
-#            j += 1
-#
-#    resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))] 
-#
-#
-#    j = 0
-#    dict_parcours1 = {k:0 for k in range(len(ramassage0))}
-#    i = 0
-#    while i < len(parcours1):
-#        if parcours1[i][2:4] <= ramassage1[j]:
-#            dict_parcours1[j] += parcours1[i][0]
-#            i += 1
-#        else :
-#            j += 1
-#            dict_parcours1[j] = 0
-#    resultat1 = [ramassage1[k] + (dict_parcours1[k],) for k in range(len(ramassage1))]
-#
-#    return (resultat0, resultat1) # de la forme ([facile], [avancé])
-#    # chaque 3-uplets : (heure, minute, nb_kayaks à ramasser)
-#
-#print(retour_kayaks2places(12,1,2026))
     
 def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
     cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
@@ -559,6 +511,8 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
         return True
     else:
         return False
+    
+
 
 creer_base(9, 0, 18, 0, 50, 50) 
 a,m,j = jour_suivant()
@@ -566,6 +520,7 @@ date(a,m,j)
 ajouter_client("dtc@trouduc.com", "Dick", "John")
 
 print("\n--- Tests ---\n")
+
 #ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "dtc@trouduc.com")
 #print(retour_kayaks1place(14, 1, 2026))
 #print(retour_kayaks2places(14, 1, 2026))
