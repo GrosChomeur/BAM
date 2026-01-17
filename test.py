@@ -1,5 +1,5 @@
 import sqlite3
-from Bam import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa)
+from Bam import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places, kayak_dispo)
 
 def test_creer_base():
     print("Tests de la fonction creer_base() :")
@@ -84,7 +84,7 @@ def test_ajoute_resa():
     ajouter_client("test2@mail.com", "Lorem", "Ipsum")
     date(1, 1, 2026)
 
-    #Cas réservation valide
+    # Cas réservation valide
     print("Tests réservation normale : ", end = "")
     try:
         ajoute_resa(10, 1, 2026, 10, 0, 2, 0, 0, "test2@mail.com")
@@ -124,6 +124,56 @@ def test_supprime_resa():
     except:
         print('✕')
         
+def test_retour_kayaks():
+    print("Tests des fonctions de retour de kayaks :")
+    creer_base(9, 0, 18, 0, 50, 50)
+    ajouter_client("test4@retours.com", "Nom", "Prenom")
+    date(1, 1, 2026)
+
+    ajoute_resa(1, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com")
+    
+    res1 = retour_kayaks1place(1, 1, 2026)
+    res2 = retour_kayaks2places(1, 1, 2026)
+    
+    #Test retour 1 place
+    print("Test calcul retour 1 place : ", end = "")
+    try:
+        assert res1[0][0][2] == 5, '✕'
+        print('✓')
+    except:
+        print('✕')
+
+    #Test retour 2 places
+    print("Test calcul retour 2 places: ", end = "")
+    try:
+        assert res2[0][0][2] == 10, '✕'
+        print('✓')
+    except:
+        print('✕')
+
+def test_kayak_dispo():
+    print("Tests de la fonction kayak_dispo()")
+    creer_base(9, 0, 18, 0, 50, 50)
+    date(1, 1, 2026)
+    
+    # Cas normal, on demande pas trop de kayaks
+    print("Test disponibilité cas normal : ", end = "")
+    dispo1 = kayak_dispo(1, 1, 2026, 10, 0, 10, 10, 0)
+    try:
+        assert dispo1 is True, '✕'
+        print('✓')
+    except:
+        print('✕')
+    
+    #Cas ou on demande plus que le stock
+    print("Test disponibilité stock dépassé : ", end = "")
+    dispo2 = kayak_dispo(1, 1, 2026, 10, 0, 60, 0, 0)
+    try:
+        assert dispo2 is False, '✕'
+        print('✓')
+    except:
+        print('✕')
+        
 if __name__ == "__main__":
     try:
         test_creer_base()
@@ -131,6 +181,8 @@ if __name__ == "__main__":
         test_ajouter_client()
         test_ajoute_resa()
         test_supprime_resa()
+        test_retour_kayaks()
+        test_kayak_dispo()
         print("Tests terminés avec succès")
     finally:
         con.close()
