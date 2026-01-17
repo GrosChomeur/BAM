@@ -1,4 +1,5 @@
 import sqlite3
+from random import randint
 
 con = sqlite3.connect("BAM.db")
 cur = con.cursor()
@@ -11,7 +12,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     cur.execute("PRAGMA foreign_keys = ON")
     
     #Empêche plusieurs enregistrements
-    tables = ['location', 'client', 'boutique_location', 'calendrier'] #Nom de toutes les tables qui vont(ou qui sont déjà) présentent dans BAM.db
+    tables = ['location', 'kayak', 'client', 'boutique_location', 'calendrier'] #Nom de toutes les tables qui vont(ou qui sont déjà) présentent dans BAM.db
     for e in tables:
         cur.execute(f"DROP TABLE IF EXISTS {e}")
     
@@ -122,7 +123,6 @@ def jour_suivant() -> tuple[int, int, int] :
         j += 1
 
     return (j, m, a)
-
 
 
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
@@ -298,8 +298,6 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
         print("Impossible de supprimer une réservation passée")
 
         
-
-
 def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     """
     Renvoie les horaires de ramassage des kayaks 2 places.
@@ -492,8 +490,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
 
     return (resultat0, resultat1)
 
-
-
     
 def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
     cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
@@ -529,8 +525,6 @@ print("\n--- Tests ---\n")
 """for i in range(60):
     a,m,j = jour_suivant()
     date(a,m,j)""" # test jour_suivant et date
-
-from random import randint
 
 ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 0, "dtc@trouduc.com")
 ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 1, "dtc@trouduc.com")
