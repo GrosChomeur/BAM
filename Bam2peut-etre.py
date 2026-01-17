@@ -11,7 +11,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     cur.execute("PRAGMA foreign_keys = ON")
     
     #Empêche plusieurs enregistrements
-    tables = ['location', 'kayak', 'client', 'boutique_location', 'calendrier'] #Nom de toutes les tables qui vont(ou qui sont déjà) présentent dans BAM.db
+    tables = ['location', 'client', 'boutique_location', 'calendrier'] #Nom de toutes les tables qui vont(ou qui sont déjà) présentent dans BAM.db
     for e in tables:
         cur.execute(f"DROP TABLE IF EXISTS {e}")
     
@@ -122,6 +122,7 @@ def jour_suivant() -> tuple[int, int, int] :
         j += 1
 
     return (j, m, a)
+
 
 
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
