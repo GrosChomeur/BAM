@@ -6,11 +6,18 @@ cur = con.cursor()
 def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
     """
     Initialise la base de données avec les tables nécessaires pour la gestion des locations de kayaks en fonction des paramètres fournis.
-    Tables :
-    - boutique_location : informations sur les horaires d'ouverture/fermeture et le stock de kayaks
-    - calendrier : date actuelle
-    - client : informations sur les clients
-    - location : informations sur les locations effectuées ou passées
+    
+    Tables :    boutique_location : informations sur les horaires d'ouverture/fermeture et le stock de kayaks
+                calendrier : date actuelle
+                client : informations sur les clients
+                location : informations sur les locations effectuées ou passées
+    
+    Paramètres: h_ouverture (int) : Heure d'ouverture
+                min_ouverture (int) : Minute d'ouverture
+                h_fermeture (int) : Heure de fermeture
+                min_fermeture (int) : Minute d'ouverture
+                nb_1place (int) : Nombre de kayaks 1 place que la boutique possède
+                nb_2place (int) : Nombre de kayaks 2 places que la boutique possède
     """
     # Active les clés étrangères
     cur.execute("PRAGMA foreign_keys = ON")
@@ -107,7 +114,7 @@ def jour_suivant() -> tuple[int, int, int] :
 
     # Année bissextile ou non
     if a % 4 == 0 :
-        if m in [1,3,5,7,8,10,12] : # ------------erreurs dans le premier fichier python sur les mois à 31 #### les mois a 31 jours sont [1,3,5,7,8,10,12], dit moi si je me trompe
+        if m in [1,3,5,7,8,10,12] :
             max_j = 31
         elif m == 2 :
             max_j = 29
