@@ -1,5 +1,5 @@
 import sqlite3
-from Bam import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places, kayak_dispo)
+from BAM2 import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places, kayak_dispo)
 
 def test_creer_base():
     print("Tests de la fonction creer_base() :")
