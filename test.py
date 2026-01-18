@@ -138,7 +138,7 @@ def test_retour_kayaks():
     ajouter_client("test4@retours.com", "Nom", "Prenom")
     date(1, 1, 2026)
 
-    ajoute_resa(1, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com") # Réservation de 5 kayaks 1 place et 10 kayaks 2 places
+    ajoute_resa(2, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com") # Réservation de 5 kayaks 1 place et 10 kayaks 2 places
     
     res1 = retour_kayaks1place(1, 1, 2026)
     res2 = retour_kayaks2places(1, 1, 2026)
