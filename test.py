@@ -118,7 +118,7 @@ def test_ajoute_resa():
     date(1, 1, 2026)
     ajouter_client("test2@mail.com", "Lorem", "Ipsum")
     ajouter_client("vador@mail.com", "Dark", "Vador")
-    ajoute_resa(10, 1, 2026, 10, 0, 50, 50, "test2@mail.com")
+    ajoute_resa(10, 1, 2026, 10, 0, 50, 50, 0, "test2@mail.com")
     print("Test réservation même si nombre demandé est supérieur au nombre de kayaks disponible au même moment: ", end = "")
     try :
         ajoute_resa(10, 1, 2026, 10, 0, 1, 1, "vador@mail.com"), '✕\n'
