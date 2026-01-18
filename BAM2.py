@@ -20,7 +20,13 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     for e in tables:
         cur.execute(f"DROP TABLE IF EXISTS {e}")
     
+    if nb_1place < 0 or nb_2places < 0:
+        raise ValueError("Le nombre de kayaks ne peut pas être négatif")
 
+    if (h_ouverture, min_ouverture) >= (h_fermeture, min_fermeture):
+        raise ValueError("L'heure d'ouverture doit être avant l'heure de fermeture")
+    
+    
     # --- Création de la table boutique_location ---
     # On vérifie de manière minimale la validité des heures et des stocks, on considère que les paramètres passés à la fonction sont relativement valides.
     cur.execute("""

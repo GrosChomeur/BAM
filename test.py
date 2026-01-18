@@ -1,5 +1,5 @@
 import sqlite3
-from BAM2 import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places, kayak_dispo)
+from BAM2 import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places)
 
 def test_creer_base():
 
@@ -7,36 +7,37 @@ def test_creer_base():
 # Là on ne fait que compararer si les paramètres passés sont bien dans la bdd ---------------- gros pb
 
     print("\nTests de la fonction creer_base() :")
+    
+    # Cas normal du projet
+    print("Test cas normal : ", end = "")
     creer_base(9, 0, 18, 0, 50, 50)
     
     cur.execute("""SELECT * FROM boutique_location""")
     resultat = cur.fetchone()
-    
-    #Cas normal
-    print("Test cas normal : ", end = "")
     assert resultat == (9, 0, 18, 0, 50, 50), '✕\n'
     print('✓\n')
     
-    #Cas où nb de kayaks négatif
+    # Cas où nb de kayaks négatif
     print("Test où le nombre de kayak est négatif : ", end = "")
     try : 
-        assert resultat == (9, 0, 18, 0, 50, -50), '✕\n'
-        print(" ✓")
-    except:
-        print('✕\n')
+        creer_base(9, 0, 18, 0, -50, -50)
+        print("✕\n")
+    except :
+        print('✓\n')
         
-    #Cas ou l'heure d'ouverture est après l'heure de fermeture
+    # Cas ou l'heure d'ouverture est après l'heure de fermeture
     print("Test où  l'heure d'ouverture est après l'heure de fermeture: ", end = "")
     try : 
-        assert resultat == (18, 0, 9, 0, 50, 50), '✕\n'
-        print('✓\n')
-    except:
+        creer_base(18, 0, 9, 0, 50, 50)
         print('✕\n')
+    except:
+        print('✓\n')
         
+
 def test_jour_suivant():
     print("\nTests de la fonction jour_suivant() :")
     
-    #Cas normal
+    # Cas normal
     date(10, 1, 2026)
     nouveau_jour = jour_suivant()
     print("Test passage au jour suivant normal :")
@@ -160,32 +161,6 @@ def test_retour_kayaks():
         print('✕\n')
 
 
-def test_kayak_dispo():
-    """
-    la fct kayak_dispo est plus utilisée dans ajoute_resa
-    """
-
-    print("Tests de la fonction kayak_dispo()")
-    creer_base(9, 0, 18, 0, 50, 50)
-    date(1, 1, 2026)
-    
-    # Cas normal, on demande pas trop de kayaks
-    print("Test disponibilité cas normal : ", end = "")
-    dispo1 = kayak_dispo(1, 1, 2026, 10, 0, 10, 10, 0)
-    try:
-        assert dispo1 is True, '✕\n'
-        print('✓\n')
-    except:
-        print('✕\n')
-    
-    #Cas ou on demande plus que le stock
-    print("Test disponibilité stock dépassé : ", end = "")
-    dispo2 = kayak_dispo(1, 1, 2026, 10, 0, 60, 0, 0)
-    try:
-        assert dispo2 is False, '✕\n'
-        print('✓\n')
-    except:
-        print('✕\n')
         
 if __name__ == "__main__":
     try:
@@ -195,7 +170,6 @@ if __name__ == "__main__":
         test_ajoute_resa()
         test_supprime_resa()
         test_retour_kayaks()
-        #test_kayak_dispo()
         print("Tests terminés avec succès")
     finally:
         con.close()
