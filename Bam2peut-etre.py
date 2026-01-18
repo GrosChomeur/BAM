@@ -1,4 +1,4 @@
-import sqlite3
+'''import sqlite3
 from random import randint
 
 con = sqlite3.connect("BAM.db")
@@ -535,4 +535,5 @@ ajoute_resa(7, 2, 2026, 12, 45, 10, 10, 1, "dtc@trouduc.com")
 
 if __name__ == "__main__":
     con.commit()
-    con.close()
+    con.close()'''
+
