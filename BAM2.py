@@ -509,28 +509,29 @@ def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, 
     
 
 
-creer_base(9, 0, 18, 0, 50, 50) 
-a,m,j = jour_suivant()
-date(a,m,j)
-ajouter_client("dtc@trouduc.com", "Dick", "John")
 
-print("\n--- Tests ---\n")
-
-#ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "dtc@trouduc.com")
-#print(retour_kayaks1place(14, 1, 2026))
-#print(retour_kayaks2places(14, 1, 2026))
-
-"""for i in range(60):
-    a,m,j = jour_suivant()
-    date(a,m,j)""" # test jour_suivant et date
-
-ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 0, "dtc@trouduc.com")
-ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 1, "dtc@trouduc.com")
-ajoute_resa(7, 2, 2026, 12, 45, 10, 10, 1, "dtc@trouduc.com")
-"""for i in range(15):
-    ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "dtc@trouduc.com")"""
-#ajoute_resa(7, 2, 2026, 14, 0, 12, 12, 0, "dtc@trouduc.com")
 
 if __name__ == "__main__":
+    creer_base(9, 0, 18, 0, 50, 50) 
+    a,m,j = jour_suivant()
+    date(a,m,j)
+    ajouter_client("dtc@trouduc.com", "Dick", "John")
+
+    print("\n--- Tests ---\n")
+
+    #ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "dtc@trouduc.com")
+    #print(retour_kayaks1place(14, 1, 2026))
+    #print(retour_kayaks2places(14, 1, 2026))
+
+    """for i in range(60):
+        a,m,j = jour_suivant()
+        date(a,m,j)""" # test jour_suivant et date
+
+    ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 0, "dtc@trouduc.com")
+    ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 1, "dtc@trouduc.com")
+    ajoute_resa(7, 2, 2026, 12, 45, 10, 10, 1, "dtc@trouduc.com")
+    """for i in range(15):
+        ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "dtc@trouduc.com")"""
+    #ajoute_resa(7, 2, 2026, 14, 0, 12, 12, 0, "dtc@trouduc.com")
     con.commit()
     con.close()

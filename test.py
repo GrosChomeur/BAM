@@ -6,7 +6,7 @@ def test_creer_base():
 # Je pense qu'il faudrait plutot faire différents creer_base() avec des paramètres différents pour chaque test pour tester si notre bdd gère bien les erreurs.
 # Là on ne fait que compararer si les paramètres passés sont bien dans la bdd ---------------- gros pb
 
-    print("Tests de la fonction creer_base() :")
+    print("\nTests de la fonction creer_base() :")
     creer_base(9, 0, 18, 0, 50, 50)
     
     cur.execute("""SELECT * FROM boutique_location""")
@@ -34,7 +34,7 @@ def test_creer_base():
         print('✕\n')
         
 def test_jour_suivant():
-    print("Tests de la fonction jour_suivant() :")
+    print("\nTests de la fonction jour_suivant() :")
     
     #Cas normal
     date(10, 1, 2026)
@@ -67,10 +67,10 @@ def test_jour_suivant():
         print('✕\n')
 
 def test_ajouter_client():
-    print("Tests de la fonction ajouter_client() :")
+    print("\nTests de la fonction ajouter_client() :")
     
     client1 = ajouter_client("test@mail.com", "Lorem", "Ipsum")
-    assert client1 is False, "Le client est déjà dans la base de données."
+    assert client1 is True, "Le client est déjà dans la base de données."
     
     print("Test si on essaye d'ajouter un client deja présent : ", end = "")
     client2 = ajouter_client("test@mail.com", "Lorem", "Ipsum")
@@ -81,7 +81,7 @@ def test_ajouter_client():
         print('✕\n')
 
 def test_ajoute_resa():
-    print("Tests de la fonction ajoute_resa() :")
+    print("\nTests de la fonction ajoute_resa() :")
     
     creer_base(9, 0, 18, 0, 50, 50)
     ajouter_client("test2@mail.com", "Lorem", "Ipsum")
@@ -90,8 +90,9 @@ def test_ajoute_resa():
     # Cas réservation valide
     print("Tests réservation normale : ", end = "")
     try:
-        ajoute_resa(10, 1, 2026, 10, 0, 2, 0, 0, "test2@mail.com")                      # 10 janvier 10h réservation de 2 kayaks 1 place
-        cur.execute("""SELECT count(*) FROM location WHERE email = 'test2@mail.com' AND j_depart = 10 AND m_depart = 1 AND a_depart = 2026 AND h_depart = 10 AND min_depart = 0 AND nb_1place = 2 AND nb_2places = 0 AND parcours = 0""") # On vérifie qu'une réservation a bien été ajoutée
+        ajoute_resa(10, 1, 2026, 10, 0, 2, 0, 0, "test2@mail.com")                 # 10 janvier 10h réservation de 2 kayaks 1 place
+                                                                                   # On vérifie qu'une réservation a bien été ajoutée pour ces paramètres
+        cur.execute("""SELECT count(*) FROM location WHERE email = 'test2@mail.com' AND j_depart = 10 AND m_depart = 1 AND a_depart = 2026 AND h_depart = 10 AND min_depart = 0 AND nb_1place = 2 AND nb_2places = 0 AND parcours = 0""") 
         assert cur.fetchone()[0] == 1, '✕\n'
         print('✓\n')
     except:
@@ -101,14 +102,18 @@ def test_ajoute_resa():
     print("Test réservation parcours 1 après 14h : ", end = "")
     try:
         ajoute_resa(10, 1, 2026, 15, 30, 1, 0, 1, "test2@mail.com")
-        cur.execute("""SELECT count(*) FROM location WHERE h_depart = 15""")
+        cur.execute("""SELECT count(*) FROM location WHERE h_depart = 15 AND min_depart = 30 AND parcours = 1""")
         assert cur.fetchone()[0] == 0, '✕\n'
         print('✓\n')
     except:
         print('✕\n')
 
+    # Cas dépassement stock
+
+    # Cas on a un nouveau stock car retour de kayak
+
 def test_supprime_resa():
-    print("Tests de la fonction supprime_resa() ---")
+    print("\nTests de la fonction supprime_resa() ---")
     
     creer_base(9, 0, 18, 0, 50, 50)
     ajouter_client("test2@mail.com", "Lorem", "Ipsum")
@@ -128,12 +133,12 @@ def test_supprime_resa():
         print('✕\n')
         
 def test_retour_kayaks():
-    print("Tests des fonctions de retour de kayaks :")
+    print("\nTests des fonctions de retour de kayaks :")
     creer_base(9, 0, 18, 0, 50, 50)
     ajouter_client("test4@retours.com", "Nom", "Prenom")
     date(1, 1, 2026)
 
-    ajoute_resa(1, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com")
+    ajoute_resa(1, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com") # Réservation de 5 kayaks 1 place et 10 kayaks 2 places
     
     res1 = retour_kayaks1place(1, 1, 2026)
     res2 = retour_kayaks2places(1, 1, 2026)
@@ -154,7 +159,12 @@ def test_retour_kayaks():
     except:
         print('✕\n')
 
+
 def test_kayak_dispo():
+    """
+    la fct kayak_dispo est plus utilisée dans ajoute_resa
+    """
+
     print("Tests de la fonction kayak_dispo()")
     creer_base(9, 0, 18, 0, 50, 50)
     date(1, 1, 2026)
@@ -185,7 +195,7 @@ if __name__ == "__main__":
         test_ajoute_resa()
         test_supprime_resa()
         test_retour_kayaks()
-        test_kayak_dispo()
+        #test_kayak_dispo()
         print("Tests terminés avec succès")
     finally:
         con.close()
