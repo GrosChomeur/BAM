@@ -107,6 +107,8 @@ def date(j: int, m: int, a: int) -> None:
 def jour_suivant() -> tuple[int, int, int] :
     """
     Fait passer un jour dans la base de données
+
+    Retourne :  tuple[int, int, int]: Tuple qui contient la date du jour suivant
     """
     cur.execute("SELECT * FROM calendrier")
     a, m, j = cur.fetchone() # met les 3 valeurs du tuple retournées pas la méthode fetchone (de la forme (annee, mois, jour)) dans les variables a, m et j.
@@ -145,7 +147,13 @@ def jour_suivant() -> tuple[int, int, int] :
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     """
     Ajoute un client dans la table 'client' s'il n'existe pas déjà.
-    Renvoie True si le client a été ajouté, False sinon.
+    
+    Paramètres :email (str) : Email du client
+                nom (str) : Nom du client
+                prenom (str) : Prénom du client
+                
+    Returns:    
+        Bool :  True si le client a été ajouté, False sinon.
     """
     # On select un client avec les informations données
     cur.execute("SELECT email FROM client WHERE email = ? AND nom = ? AND prenom = ?", (email, nom, prenom))
@@ -167,8 +175,17 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
 def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_depart: int, nb_1place: int, nb_2places: int, parcours: int, email_client: str) -> None:
     """
     Ajoute la location dans la table 'location' si elle est valide
+    
+    Paramètres :    j_depart (int) : Jour de la réservation
+                    m_depart (int) : Mois de la réservation
+                    a_depart (int) : Année départ
+                    h_depart (int) : Heure du départ
+                    min_depart (int) : Minute du départ
+                    nb_1place (int) : Nombre de kayak 1 place demandé
+                    nb_2places (int) : Nombre de kayak 2 places demandé
+                    parcours (1,0) : Parcours demandé
+                    email_client (str) : Email du client
     """
-
     cur.execute("""SELECT h_ouverture, min_ouverture, h_fermeture, min_fermeture FROM boutique_location""")
     h_ouv, min_ouv, h_fer, min_fer = cur.fetchone()
 
@@ -194,8 +211,6 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         print("Réservation impossible : date passée")
         return
 
-
-
     # Vérification de l'heure de départ en fonction du parcours (On exclut les résa pour 15h et 14h pour les parcours 0 et 1 respectivement)
     if parcours == 0 and h_depart > h_fer - 3 :
         print(f"Parcours de 6km non autorisé après {h_fer - 3}h00")
@@ -209,8 +224,6 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     if cur.fetchone() is None:
         print(f"Le client avec l'email : {email_client} n'existe pas, un compte est nécessaire pour effectuer une réservation")
         return
-
-
 
     # 1ère méthode : Vérification du stock en excluant les kayaks retournés par l'employé (on peut prendre au max 100 kayaks réservés logiquement, avec 50 de chaque type)
     '''cur.execute("""
@@ -231,8 +244,6 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         print("Réservation impossible, pas assez de kayaks disponibles")
         return"""'''
     # fin vérification 1ère méthode
-
-
 
     # 2ème méthode : Vérification du stock en incluant les kayaks retournés par l'employé
     cur.execute("""
@@ -286,9 +297,6 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         return
     # fin vérification 2ème méthode
 
-    
-
-
     # Insertion de la réservation
     cur.execute("""
         INSERT INTO location (email, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -298,9 +306,14 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
 
 
 
-def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None:
+def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int) -> None:
     """
     Supprime une location existante si la date n'a pas été dépassée
+    
+    Paramètres :    id_location (int) : Id de la location*
+                    j_depart (int) : Jour de la location
+                    m_depart (int) : Mois de départ
+                    a_depart (int) : Année de départ
     """
 
     # Si la réservation est plus ancienne que la date -> On ne plus pas la supprimer, on ne peut pas supprimer une réservation le jour même
@@ -314,9 +327,13 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
 
 
 
-def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
+def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int) -> tuple[list[tuple[int, int, int]]] :
     """
     Renvoie les horaires de ramassage des kayaks 2 places pour une date donnée en paramètre
+    
+    Paramètres :j_depart (int): Jour ou un cherche les retour de kayak
+                m_depart (int): Mois ou un cherche les retour de kayak
+                a_depart (int): Année ou un cherche les retour de kayak
     """
     cur.execute("""SELECT h_ouverture, min_ouverture, h_fermeture, min_fermeture FROM boutique_location""")
     h_ouv, min_ouv, h_fer, min_fer = cur.fetchone()
@@ -416,9 +433,13 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
 
 
 
-def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
+def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int) -> tuple[list[tuple[int, int, int]]]:
     """
     Renvoie les horaires de ramassage des kayaks 1 place pour une date donnée en paramètre
+    
+    Paramètres :j_depart (int): Jour ou un cherche les retour de kayak
+                m_depart (int): Mois ou un cherche les retour de kayak
+                a_depart (int): Année ou un cherche les retour de kayak
     """
     cur.execute("""SELECT h_ouverture, min_ouverture, h_fermeture, min_fermeture FROM boutique_location""")
     h_ouv, min_ouv, h_fer, min_fer = cur.fetchone()
@@ -438,7 +459,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     ramassage0 = [(h_ouv + 3 + i, 30) for i in range(7)]     # on rajoute un passage de l'employé à 18h30 et 19h pour potentiellement ramasser les kayaks retardataires arrivant après 17h30 et 18h 
     # Pour le parcours 1 : 13h00, 14h00... 19h00
     ramassage1 = [(h_ouv + 4 + i, 0) for i in range(7)]
-
 
     # Tableaux avec les horaires d'arrivée par parcours
     parcours0 = []
@@ -480,7 +500,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
             j += 1
 
     resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))] 
-
 
     # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 1
     j = 0
