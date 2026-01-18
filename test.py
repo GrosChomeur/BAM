@@ -140,8 +140,8 @@ def test_retour_kayaks():
 
     ajoute_resa(2, 1, 2026, 9, 0, 5, 10, 0, "test4@retours.com") # Réservation de 5 kayaks 1 place et 10 kayaks 2 places
     
-    res1 = retour_kayaks1place(1, 1, 2026)
-    res2 = retour_kayaks2places(1, 1, 2026)
+    res1 = retour_kayaks1place(2, 1, 2026)
+    res2 = retour_kayaks2places(2, 1, 2026)
     
     #Test retour 1 place
     print("Test calcul retour 1 place : ", end = "")
@@ -150,6 +150,7 @@ def test_retour_kayaks():
         print('✓\n')
     except:
         print('✕\n')
+        print(res1)
 
     #Test retour 2 places
     print("Test calcul retour 2 places: ", end = "")
