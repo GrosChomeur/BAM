@@ -137,16 +137,14 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     resultat = cur.fetchone()
     # Si le client existe deja (On considère que 2 personnes n'ont pas le même nom et prenom...)
     if resultat is not None:
-        return True # On renvoie True car le client existe deja
+        return False # On renvoie False car le client existe deja
     # Sinon on l'ajoute
     else:
         cur.execute("INSERT INTO client (email, nom, prenom) VALUES (?, ?, ?)", (email, nom, prenom)) # On ajoute le client
         con.commit()
         print("Client", prenom, nom, "ajouté")
-        return False
+        return True
     
-        # cur.execute("SELECT id_client FROM client WHERE nom = ? AND prenom = ?", (nom, prenom))
-        # au cas ou le max n'est pas le dernier ajouté en cas de suppression de client
 
 
 
