@@ -441,8 +441,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
             parcours0.append(tuple(row))
         else :
             parcours1.append(tuple(row))
-    print(parcours0)
-    print(parcours1)
 
     # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 0
     j = 0
