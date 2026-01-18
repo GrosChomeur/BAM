@@ -1,38 +1,43 @@
 import sqlite3
-from random import randint
 
 con = sqlite3.connect("BAM.db")
 cur = con.cursor()
 
 def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
     """
-    Initialise la base de données avec les tables nécessaires pour la gestion des locations de kayaks.
+    Initialise la base de données avec les tables nécessaires pour la gestion des locations de kayaks en fonction des paramètres fournis.
+    Tables :
+    - boutique_location : informations sur les horaires d'ouverture/fermeture et le stock de kayaks
+    - calendrier : date actuelle
+    - client : informations sur les clients
+    - location : informations sur les locations effectuées ou passées
     """
-    #Active les clés étrangères
+    # Active les clés étrangères
     cur.execute("PRAGMA foreign_keys = ON")
     
-    #Empêche plusieurs enregistrements
-    tables = ['location', 'kayak', 'client', 'boutique_location', 'calendrier'] #Nom de toutes les tables qui vont(ou qui sont déjà) présentent dans BAM.db
+    # Empêche plusieurs enregistrements en faisant un reset des tables
+    tables = ['location', 'kayak', 'client', 'boutique_location', 'calendrier'] # Nom de toutes les tables qui sont présentent dans BAM.db
     for e in tables:
         cur.execute(f"DROP TABLE IF EXISTS {e}")
     
 
     # --- Création de la table boutique_location ---
+    # On vérifie de manière minimale la validité des heures et des stocks, on considère que les paramètres passés à la fonction sont relativement valides.
     cur.execute("""
     CREATE TABLE IF NOT EXISTS boutique_location(
-        h_ouverture INT,
-        min_ouverture INT,
-        h_fermeture INT,
-        min_fermeture INT,
+        h_ouverture INT CHECK (h_ouverture >= 0 AND h_ouverture < 24),
+        min_ouverture INT CHECK (min_ouverture >= 0 AND min_ouverture < 60),
+        h_fermeture INT CHECK (h_fermeture >= 0 AND h_fermeture < 24),
+        min_fermeture INT CHECK (min_fermeture >= 0 AND min_fermeture < 60),
         stock_1place INT CHECK (stock_1place <= 50 AND stock_1place >= 0),
-        stock_2place INT CHECK (stock_2place <= 50 AND stock_2place >= 0)
+        stock_2places INT CHECK (stock_2places <= 50 AND stock_2places >= 0)
         )
     """)
-    #On met dans la table boutique_location les infos passées en paramètre de la fonction
+    # On met dans la table boutique_location les infos passées en paramètre de la fonction
     cur.execute("INSERT INTO boutique_location VALUES (?, ?, ?, ?, ?, ?)", (h_ouverture, min_ouverture, h_fermeture, min_fermeture, nb_1place, nb_2places))
 
     # --- Création de la table calendrier ---
-    #On initialise en 01/01/2026 arbitrairement
+    # On initialise en 01/01/2026 arbitrairement
     
     cur.execute("""
     CREATE TABLE IF NOT EXISTS calendrier( 
@@ -53,19 +58,18 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     """)
 
     # --- Création de la table location ---
-    # Ajout du parcours pour les calculs de retour
-    cur.execute(f"""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS location(
         id_location INTEGER PRIMARY KEY AUTOINCREMENT,
         email INT REFERENCES client(email),
-        nb_1place INT CHECK (nb_1place >= 0),
-        nb_2places INT CHECK (nb_2places >= 0),
-        parcours INT CHECK (parcours IN (0, 1)),
+        nb_1place INT,
+        nb_2places INT,
+        parcours INT,
         a_depart INT, 
         m_depart INT, 
         j_depart INT,
-        h_depart INT CHECK (h_depart >= {h_ouverture} AND h_depart <= {h_fermeture}-3),
-        min_depart INT CHECK (min_depart >= 0 AND min_depart < 60)
+        h_depart INT,
+        min_depart INT
         )
     """)
     
@@ -127,20 +131,20 @@ def jour_suivant() -> tuple[int, int, int] :
 
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     """
-    Renvoie True s'il existe déjà, sinon l'ajoute et Renvoie False.
+    Ajoute un client dans la table 'client' s'il n'existe pas déjà.
+    Renvoie True si le client a été ajouté, False sinon.
     """
-    # On cherche si client il y a
+    # On select un client avec les informations données
     cur.execute("SELECT email FROM client WHERE email = ? AND nom = ? AND prenom = ?", (email, nom, prenom))
-
-# AJOUT(?) : adresse email pour prénoms pareils
-
     resultat = cur.fetchone()
-    # Si le client existe deja (On considère que 2 personnes n'ont pas le même nom et prenom...)
+
+    # Si le client existe deja
     if resultat is not None:
-        return False # On renvoie False car le client existe deja
-    # Sinon on l'ajoute
+        return False # On renvoie False car le client existe déjà
+    
+    # Sinon on l'ajoute à la table
     else:
-        cur.execute("INSERT INTO client (email, nom, prenom) VALUES (?, ?, ?)", (email, nom, prenom)) # On ajoute le client
+        cur.execute("INSERT INTO client (email, nom, prenom) VALUES (?, ?, ?)", (email, nom, prenom))
         con.commit()
         print("Client", prenom, nom, "ajouté")
         return True
@@ -150,52 +154,56 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
 
 def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_depart: int, nb_1place: int, nb_2places: int, parcours: int, email_client: str) -> None:
     """
-    Ajoute la location dans la base de données si elle est valide
+    Ajoute la location dans la table 'location' si elle est valide
     """
-    print(h_depart, "h", min_depart, ",", nb_1place, "une place,", nb_2places, "deux places,", f"parcours {parcours}")
 
     # Vérification du nombre de kayaks demandés
     if nb_1place < 0 or nb_2places < 0 or (nb_1place == 0 and nb_2places == 0):
         print("Réservation impossible, nombre de kayaks invalide")
         return
 
-    # Verification de la validité de la date
-    if m_depart < 1 or m_depart > 12 or j_depart < 1 or j_depart > 31 : # vérification par rapport aux mois ??
+    # Vérification du parcours
+    if parcours not in [0, 1]:
+        print("Réservation impossible, parcours invalide")
+        return
+
+    # Verification de la validité de la date et de l'horaire
+    if m_depart < 1 or m_depart > 12 or j_depart < 1 or j_depart > 31 or h_depart < 0 or h_depart > 23 or min_depart < 0 or min_depart >= 60:
         print("Réservation impossible, date invalide")
         return
 
     # Vérification de la cohérence de la date : avant/après la date actuelle
     cur.execute("""SELECT annee, mois, jour FROM calendrier""")
     a_actu, m_actu, j_actu = cur.fetchone()
-    if (a_depart, m_depart, j_depart) < (a_actu, m_actu, j_actu): # <= , si on veut accepter les réservations pour le jour même
-        print("Réservation impossible")
+    if (a_depart, m_depart, j_depart) <= (a_actu, m_actu, j_actu): # On ne peut pas réserver pour une date passée ou le jour même
+        print("Réservation impossible : date passée")
         return
 
-    # Vérification de l'heure de départ en fonction du parcours
-    if parcours == 0 and h_depart > 14 :   # si on veut autoriser les réservations pour 15h00 :   ... and (h_depart > 15 or (h_depart == 15 and min_depart > 0))
-        print("Parcours de 6km non autorisé après 15h")
+    # Vérification de l'heure de départ en fonction du parcours (On exclut les résa pour 15h et 14h pour les parcours 0 et 1 respectivement)
+    if parcours == 0 and h_depart > 14 :
+        print("Parcours de 6km non autorisé après 15h00")
         return
-    elif parcours == 1 and h_depart > 13 :   # si on veut autoriser les réservations pour 14h00 :   ... and (h_depart > 14 or (h_depart == 14 and min_depart > 0))
-        print("Parcours de 10km non autorisé après 14h")
+    elif parcours == 1 and h_depart > 13 :
+        print("Parcours de 10km non autorisé après 14h00")
         return
 
     # Vérification de l'email du client
     cur.execute("""SELECT email FROM client WHERE email = ?""", (email_client,))
     if cur.fetchone() is None:
-        print(f"Le client avec l'email : {email_client} n'existe pas.")
+        print(f"Le client avec l'email : {email_client} n'existe pas, un compte est nécessaire pour effectuer une réservation")
         return
 
 
 
-    # Vérification du stock de la JOURNEE (on peut prendre au max 100 kayaks réservés logiquement)
-    cur.execute("""
+    # 1ère méthode : Vérification du stock en excluant les kayaks retournés par l'employé (on peut prendre au max 100 kayaks réservés logiquement, avec 50 de chaque type)
+    '''cur.execute("""
         SELECT SUM(nb_1place), SUM(nb_2places) 
         FROM location 
         WHERE a_depart = ? AND m_depart = ? AND j_depart = ?""", 
         (a_depart, m_depart, j_depart))
     resultat = cur.fetchone()
 
-    # Verification de valeurs None
+    # Verification de valeurs None et remplacement par des 0
     if resultat[0] is None:
         resultat = (0, resultat[1])
     if resultat[1] is None:
@@ -204,33 +212,28 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     # Comparaison avec le stock total
     """if (50 - resultat[0] < nb_1place) or (50 - resultat[1] < nb_2places):
         print("Réservation impossible, pas assez de kayaks disponibles")
-        return"""
-
-    # fin vérification stock pour une journée
-
+        return"""'''
+    # fin vérification 1ère méthode
 
 
 
-    ######### En prenant en compte les retours de kayaks #########
-
+    # 2ème méthode : Vérification du stock en incluant les kayaks retournés par l'employé
     cur.execute("""
         SELECT SUM(nb_1place), SUM(nb_2places) 
         FROM location 
-        WHERE a_depart = ? AND m_depart = ? AND j_depart = ? AND (h_depart < ? OR (h_depart = ? AND min_depart <= ?))""", 
-        (a_depart, m_depart, j_depart, h_depart, h_depart, min_depart))
+        WHERE a_depart = ? AND m_depart = ? AND j_depart = ?""", 
+        (a_depart, m_depart, j_depart))
     resultat_retours = cur.fetchone()
     
-    # Verification de valeurs None
+    # Verification de valeurs None et remplacement par des 0
     if resultat_retours[0] is None:
         resultat_retours = (0, resultat_retours[1])
     if resultat_retours[1] is None:
         resultat_retours = (resultat_retours[0], 0)
 
-    # Liste de tuples (heure, minute, nb_kayaks à ramasser) : [(12,30,nb), (13,30,nb), ...]
+    # Liste de tuples (heure, minute, nb_kayaks à ramasser), exemple : ([(12,30,3), (13,30,8), ...], [(13,0,5), (14,0,12), ...])
     rk2p = retour_kayaks2places(j_depart, m_depart, a_depart)
     rk1p = retour_kayaks1place(j_depart, m_depart, a_depart)
-    print(f"{rk1p=}")
-    print(f"{rk2p=}")
 
 
     # Calcul du nombre de kayaks 1 places ramenés avant l'heure de départ
@@ -257,15 +260,14 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         S2 += rk2p[1][i][2]
         i += 1
     
+    cur.execute("""SELECT stock_1place, stock_2places FROM boutique_location""")
+    stock = cur.fetchone()
 
-    print((50 + S1 - resultat[0] < nb_1place), f"{S1=}, {nb_1place=}, {resultat[0]=}")
-    print((50 + S2 - resultat[1] < nb_2places), f"{S2=}, {nb_2places=}, {resultat[1]=}")
-    # On ajoute les kayaks ramenés avant l'heure de départ
-    # Comparaison avec le stock total
-    if (50 + S1 - resultat[0] < nb_1place) or (50 + S2 - resultat[1] < nb_2places):
+    # Comparaison avec le stock total + les retours
+    if (stock[0] + S1 - resultat_retours[0] < nb_1place) or (stock[1] + S2 - resultat_retours[1] < nb_2places):
         print("Réservation impossible, pas assez de kayaks disponibles\n")
         return
-
+    # fin vérification 2ème méthode
 
     
 
@@ -279,16 +281,14 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
     
 
 
-
-
-def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int):
+def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None:
     """
-    Supprime une location si la date n'a pas été dépassée
+    Supprime une location existante si la date n'a pas été dépassée
     """
 
-    # Si location est plus ancienne que la date -> On ne peut pas la supprimer
+    # Si la réservation est plus ancienne que la date -> On ne plus pas la supprimer, on ne peut pas supprimer une réservation le jour même
     cur.execute("""SELECT * FROM calendrier""")
-    if cur.fetchone() < (a_depart, m_depart, j_depart) : #Verifie si la date est strictement plus petite que la date de la location
+    if cur.fetchone() < (a_depart, m_depart, j_depart) : # Verifie si la date actuelle est strictement plus petite que la date de la location
         cur.execute(f"""DELETE FROM location WHERE id_location = {id_location}""")
         con.commit()
         print("Réservation supprimée")
@@ -298,9 +298,9 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
         
 def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     """
-    Renvoie les horaires de ramassage des kayaks 2 places.
+    Renvoie les horaires de ramassage des kayaks 2 places pour une date donnée en paramètre
     """
-    #On extrait les données chronologiquement pour que ce soit plus facile, donc pas besoin de tri ou de fonction la sorted()
+    # On extrait les données chronologiquement avec ORDER BY pour que ce soit plus facile à traiter
     cur.execute("""
         SELECT nb_2places, parcours, h_depart, min_depart 
         FROM location 
@@ -308,18 +308,18 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
         AND a_depart = ? AND m_depart = ? AND j_depart = ?
         ORDER BY h_depart, min_depart """, 
         (a_depart, m_depart, j_depart))
-    
     rows = cur.fetchall()
-    #L'employé passe toutes les 30 min
-    #Fin du parcours 0 : 12h30, 13h30..., 18h30
-    ramassage0 = [(12 + i, 30) for i in range(7)]   # on rajoute un passage de l'employé à 18h30 et 19h pour ramasser les kayaks arrivant après 17h30 et 18h
-    #Fin du parcours 1 : 13h00, 14h00..., 19h00
+
+    #On considère que l'employé passe toutes les 30 min alternativement entre chaque parcours en commençant par le parcours 0 :
+
+    # Pour le parcours 0 : 12h30, 13h30..., 18h30
+    ramassage0 = [(12 + i, 30) for i in range(7)]   # on rajoute un passage de l'employé à 18h30 et 19h pour potentiellement ramasser les kayaks retardataires arrivant après 17h30 et 18h
+    # Pour le parcours 1 : 13h00, 14h00..., 19h00
     ramassage1 = [(13 + i, 0) for i in range(7)]
 
+    #Tableaux avec les horaires d'arrivée triés par parcours
     parcours0 = []
     parcours1 = []
-
-    #Tableaux avec les horaires d'arrivée pour chaque parcours
     for i in range(len(rows)):
         row = list(rows[i])
         row[2] += 3 + row[1]
@@ -329,28 +329,24 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
             parcours1.append(tuple(row))
 
 
-    # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 0 
+    # On calcule le nombre de kayaks à ramasser à chaque passage de l'employé à chaque horaire pour le parcours 0 
     j = 0
     dict_parcours0 = {k:0 for k in range(len(ramassage0))}
     i = 0
     while i < len(parcours0) and j < len(ramassage0):
         if parcours0[i][2:4] <= ramassage0[j]:
-            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage:
+            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
-
-                if nb_reste > 0 :
+                
+                dict_parcours0[j] = 12
+                j += 1
+                while nb_reste >= 12:
                     dict_parcours0[j] = 12
                     j += 1
-                    while nb_reste >= 12:
-                        dict_parcours0[j] = 12
-                        j += 1
-                        nb_reste -= 12
-                    dict_parcours0[j] = nb_reste
-                else:
-                    dict_parcours0[j+1] += nb_reste
-                    dict_parcours0[j] = 12
-                    j+=1
+                    nb_reste -= 12
+                dict_parcours0[j] = nb_reste
+                
             else:
                 dict_parcours0[j] += parcours0[i][0]
             i += 1
@@ -360,28 +356,25 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     resultat0 = [ramassage0[k] + (dict_parcours0[k],) for k in range(len(ramassage0))] 
 
 
-    # On calcule le nombre de kayaks à ramasser à chaque passage à chaque horaire pour le parcours 1
+
+    # On calcule le nombre de kayaks à ramasser à chaque passage de l'employé à chaque horaire pour le parcours 1
     j = 0
     dict_parcours1 = {k:0 for k in range(len(ramassage1))}
     i = 0
     while i < len(parcours1) and j < len(ramassage1):
         if parcours1[i][2:4] <= ramassage1[j]:
-            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage:
+            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
-
-                if nb_reste > 0:
+                
+                dict_parcours1[j] = 12
+                j += 1
+                while nb_reste >= 12:
                     dict_parcours1[j] = 12
                     j += 1
-                    while nb_reste >= 12:
-                        dict_parcours1[j] = 12
-                        j += 1
-                        nb_reste -= 12
-                    dict_parcours1[j] = nb_reste
-                else:
-                    dict_parcours1[j+1] += nb_reste
-                    dict_parcours1[j] = 12
-                    j+=1
+                    nb_reste -= 12
+                dict_parcours1[j] = nb_reste
+                
             else:
                 dict_parcours1[j] += parcours1[i][0]
             i += 1
@@ -395,9 +388,9 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
 
 def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     """
-    Renvoie les horaires de ramassage des kayaks 1 place.
+    Renvoie les horaires de ramassage des kayaks 1 place pour une date donnée en paramètre
     """
-    # On extrait les données chronologiquement pour que ce soit plus facile, donc pas besoin de tri
+    # On extrait les données chronologiquement pour que ce soit plus facile à traiter
     cur.execute("""
         SELECT nb_1place, parcours, h_depart, min_depart 
         FROM location 
@@ -408,15 +401,15 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     
     rows = cur.fetchall()
     #L'employé passe toutes les 30 min
-    #Fin du parcours 0 : 12h30, 13h30...
-    ramassage0 = [(12 + i, 30) for i in range(7)]     # on rajoute un passage de l'employé à 18h30 et 19h pour ramasser les kayaks arrivant après 17h30 et 18h
-    #Fin du parcours 1 : 13h00, 14h00...
+    # Pour le parcours 0 : 12h30, 13h30... 18h30
+    ramassage0 = [(12 + i, 30) for i in range(7)]     # on rajoute un passage de l'employé à 18h30 et 19h pour potentiellement ramasser les kayaks retardataires arrivant après 17h30 et 18h 
+    # Pour le parcours 1 : 13h00, 14h00... 19h00
     ramassage1 = [(13 + i, 0) for i in range(7)]
 
+
+    # Tableaux avec les horaires d'arrivée par parcours
     parcours0 = []
     parcours1 = []
-
-    #Tableaux avec les horaires d'arrivée pour chaque parcours
     for i in range(len(rows)):
         row = list(rows[i])
         row[2] += 3 + row[1]
@@ -431,22 +424,18 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours0) and j < len(ramassage0):
         if parcours0[i][2:4] <= ramassage0[j]:
-            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage:
+            if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
 
-                if nb_reste > 0:
+                dict_parcours0[j] = 12
+                j += 1
+                while nb_reste >= 12:
                     dict_parcours0[j] = 12
                     j += 1
-                    while nb_reste >= 12:
-                        dict_parcours0[j] = 12
-                        j += 1
-                        nb_reste -= 12
-                    dict_parcours0[j] = nb_reste
-                else:
-                    dict_parcours0[j+1] += nb_reste
-                    dict_parcours0[j] = 12
-                    j+=1
+                    nb_reste -= 12
+                dict_parcours0[j] = nb_reste
+                
             else:
                 dict_parcours0[j] += parcours0[i][0]
             i += 1
@@ -462,22 +451,18 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     i = 0
     while i < len(parcours1) and j < len(ramassage1):
         if parcours1[i][2:4] <= ramassage1[j]:
-            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage:
+            if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
-
-                if nb_reste > 0:
+                
+                dict_parcours1[j] = 12
+                j += 1
+                while nb_reste >= 12:
                     dict_parcours1[j] = 12
                     j += 1
-                    while nb_reste >= 12:
-                        dict_parcours1[j] = 12
-                        j += 1
-                        nb_reste -= 12
-                    dict_parcours1[j] = nb_reste
-                else:
-                    dict_parcours1[j+1] += nb_reste
-                    dict_parcours1[j] = 12
-                    j+=1
+                    nb_reste -= 12
+                dict_parcours1[j] = nb_reste
+                
             else:
                 dict_parcours1[j] += parcours1[i][0]
             i += 1
@@ -489,49 +474,16 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     return (resultat0, resultat1)
 
     
-def kayak_dispo(j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int, nb_2places : int, parcours : int) -> bool :
-    cur.execute(f"""SELECT SUM(nb_1place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
-    # on selectionne toutes les resa kayak une place et les somme
-    # Donc 50 - cette somme = nb de kayak dispo sans ceux qui vont etre ramenés
-    # c'est là où il faut utiliser retour_kayaks1place pour savoir combien de kayak vont etre ramenés avant l'heure de la nouvelle resa
-    used_1 = cur.fetchall()
-
-
-    # rassemble tous les kayaks 1 place utilisés durant le moment donné en entrée.
-    cur.execute(f"""SELECT SUM(nb_2place) FROM location WHERE j_depart = {j_depart} AND m_depart = {m_depart} AND a_depart = {a_depart}""")
-    used_2 = cur.fetchall()
-
-    # dessous, observe si on peut utiliser les kayaks demandés en +.
-    if used_1[0] + nb_1place <= 50 and used_2[0] + nb_2places <= 50:
-        return True
-    else:
-        return False
     
 
 
-
-
 if __name__ == "__main__":
+    # Exemple d'initialisation de la base de données
     creer_base(9, 0, 18, 0, 50, 50) 
     a,m,j = jour_suivant()
     date(a,m,j)
-    ajouter_client("dtc@trouduc.com", "Dick", "John")
+    ajouter_client("test@loc-kayak.fr", "Freak", "John")
+    ajoute_resa(2, 1, 2026, 9, 0, 5, 3, 1, "test@]loc-kayak.fr")
 
-    print("\n--- Tests ---\n")
-
-    #ajoute_resa(14, 1, 2026, 10, 0, 2, 1, 0, "dtc@trouduc.com")
-    #print(retour_kayaks1place(14, 1, 2026))
-    #print(retour_kayaks2places(14, 1, 2026))
-
-    """for i in range(60):
-        a,m,j = jour_suivant()
-        date(a,m,j)""" # test jour_suivant et date
-
-    ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 0, "dtc@trouduc.com")
-    ajoute_resa(7, 2, 2026, 9, 0, 50, 50, 1, "dtc@trouduc.com")
-    ajoute_resa(7, 2, 2026, 12, 45, 10, 10, 1, "dtc@trouduc.com")
-    """for i in range(15):
-        ajoute_resa(7, 2, 2026, randint(9,14), randint(0,59), randint(0,10), randint(0,10), randint(0,1), "dtc@trouduc.com")"""
-    #ajoute_resa(7, 2, 2026, 14, 0, 12, 12, 0, "dtc@trouduc.com")
     con.commit()
     con.close()
