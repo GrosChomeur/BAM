@@ -3,6 +3,8 @@ import sqlite3
 con = sqlite3.connect("BAM.db")
 cur = con.cursor()
 
+
+
 def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fermeture : int, nb_1place : int, nb_2places : int) -> None:
     """
     Initialise la base de données avec les tables nécessaires pour la gestion des locations de kayaks en fonction des paramètres fournis.
@@ -32,8 +34,7 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
 
     if (h_ouverture, min_ouverture) >= (h_fermeture, min_fermeture):
         raise ValueError("L'heure d'ouverture doit être avant l'heure de fermeture")
-    
-    
+        
     # --- Création de la table boutique_location ---
     # On vérifie de manière minimale la validité des heures et des stocks, on considère que les paramètres passés à la fonction sont relativement valides.
     cur.execute("""
@@ -89,8 +90,6 @@ def creer_base(h_ouverture : int, min_ouverture : int, h_fermeture : int, min_fe
     con.commit()
     print("Base de données initialisée")
     
-
-
 def date(j: int, m: int, a: int) -> None:
     """
     Met à jour la date dans la table 'calendrier' de la base de données. 
@@ -142,6 +141,7 @@ def jour_suivant() -> tuple[int, int, int] :
     return (j, m, a)
 
 
+
 def ajouter_client(email : str, nom: str, prenom: str) -> bool :
     """
     Ajoute un client dans la table 'client' s'il n'existe pas déjà.
@@ -161,7 +161,6 @@ def ajouter_client(email : str, nom: str, prenom: str) -> bool :
         con.commit()
         print("Client", prenom, nom, "ajouté")
         return True
-    
 
 
 
@@ -296,7 +295,7 @@ def ajoute_resa(j_depart: int, m_depart: int, a_depart: int, h_depart: int, min_
         (email_client, nb_1place, nb_2places, parcours, a_depart, m_depart, j_depart, h_depart, min_depart))
     con.commit()
     print("Réservation par", email_client, "prise en compte\n")
-    
+
 
 
 def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : int, h_depart : int, min_depart : int, nb_1place : int) -> None:
@@ -313,7 +312,8 @@ def supprime_resa(id_location : int, j_depart : int, m_depart : int, a_depart : 
     else :
         print("Impossible de supprimer une réservation passée")
 
-        
+
+
 def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     """
     Renvoie les horaires de ramassage des kayaks 2 places pour une date donnée en paramètre
@@ -415,6 +415,7 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
     return (resultat0, resultat1)
 
 
+
 def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
     """
     Renvoie les horaires de ramassage des kayaks 1 place pour une date donnée en paramètre
@@ -513,8 +514,6 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
 
     return (resultat0, resultat1)
 
-    
-    
 
 
 if __name__ == "__main__":
