@@ -1,6 +1,8 @@
 import sqlite3
 from BAM2 import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places)
 
+
+
 def test_creer_base():
     print("\nTests de la fonction creer_base() :")
     
@@ -66,6 +68,8 @@ def test_jour_suivant():
     except :
         print('✕\n')
 
+
+
 def test_ajouter_client():
     print("\nTests de la fonction ajouter_client() :")
     
@@ -80,6 +84,8 @@ def test_ajouter_client():
     except :
         print('✕\n')
 
+
+
 def test_ajoute_resa():
     print("\nTests de la fonction ajoute_resa() :")
     
@@ -90,8 +96,8 @@ def test_ajoute_resa():
     # Cas réservation valide
     print("Tests réservation normale : ", end = "")
     try:
-        ajoute_resa(10, 1, 2026, 10, 0, 2, 0, 0, "test2@mail.com")                 # 10 janvier 10h réservation de 2 kayaks 1 place
-                                                                                   # On vérifie qu'une réservation a bien été ajoutée pour ces paramètres
+        ajoute_resa(10, 1, 2026, 10, 0, 2, 0, 0, "test2@mail.com") # 10 janvier 10h réservation de 2 kayaks 1 place
+        # On vérifie qu'une réservation a bien été ajoutée pour ces paramètres
         cur.execute("""SELECT count(*) FROM location WHERE email = 'test2@mail.com' AND j_depart = 10 AND m_depart = 1 AND a_depart = 2026 AND h_depart = 10 AND min_depart = 0 AND nb_1place = 2 AND nb_2places = 0 AND parcours = 0""") 
         assert cur.fetchone()[0] == 1, '✕\n'
         print('✓\n')
@@ -107,10 +113,38 @@ def test_ajoute_resa():
         print('✓\n')
     except:
         print('✕\n')
-
     # Cas dépassement stock
-
+    creer_base(9, 0, 18, 0, 50, 50)
+    date(1, 1, 2026)
+    ajouter_client("test2@mail.com", "Lorem", "Ipsum")
+    ajouter_client("vador@mail.com", "Dark", "Vador")
+    ajoute_resa(10, 1, 2026, 10, 0, 50, 50, "test2@mail.com")
+    print("Test réservation même si nombre demandé est supérieur au nombre de kayaks disponible au même moment: ", end = "")
+    try :
+        ajoute_resa(10, 1, 2026, 10, 0, 1, 1, "vador@mail.com"), '✕\n'
+        print('✓\n')
+    except :
+        print('✕\n')
+        
     # Cas on a un nouveau stock car retour de kayak
+    creer_base(9, 0, 18, 0, 50, 50)
+    date(1, 1, 2026)
+    
+    ajouter_client("client@mail.com", "Jean", "Dupont")
+    ajouter_client("client1@mail.com", "Marie", "Curie")
+    print("Test réservation après le passage d'un emplyé", end = "")
+    try :
+        ajoute_resa(1, 1, 2026, 10, 0, 50, 0, 0, "client@mail.com")
+        ajoute_resa(1, 1, 2026, 14, 0, 1, 0, 0, "client1@mail.com")
+        cur.execute("""SELECT count(*) FROM location 
+                       WHERE email = 'client1@mail.com' 
+                       AND h_depart = 14 AND nb_1place = 1""")
+        assert cur.fetchone()[0] == 1, '✕\n'
+        print('✓\n')
+    except :
+        print('✕\n')
+
+
 
 def test_supprime_resa():
     print("\nTests de la fonction supprime_resa() ---")
@@ -131,7 +165,9 @@ def test_supprime_resa():
         print('✓\n')
     except:
         print('✕\n')
-        
+
+
+
 def test_retour_kayaks():
     print("\nTests des fonctions de retour de kayaks :")
     creer_base(9, 0, 18, 0, 50, 50)
