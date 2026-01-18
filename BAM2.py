@@ -359,15 +359,19 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
             if (dict_parcours0[j] + parcours0[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
-                
-                dict_parcours0[j] = 12
-                j += 1
-                while nb_reste >= 12:
+ 
+                if nb_reste > 0 :
                     dict_parcours0[j] = 12
                     j += 1
-                    nb_reste -= 12
-                dict_parcours0[j] = nb_reste
-                
+                    while nb_reste >= 12:
+                        dict_parcours0[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours0[j] = nb_reste
+                else:
+                    dict_parcours0[j+1] += nb_reste
+                    dict_parcours0[j] = 12
+                    j+=1
             else:
                 dict_parcours0[j] += parcours0[i][0]
             i += 1
@@ -387,15 +391,19 @@ def retour_kayaks2places(j_depart: int, m_depart: int, a_depart: int):
             if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
-                
-                dict_parcours1[j] = 12
-                j += 1
-                while nb_reste >= 12:
+
+                if nb_reste > 0 :
                     dict_parcours1[j] = 12
                     j += 1
-                    nb_reste -= 12
-                dict_parcours1[j] = nb_reste
-                
+                    while nb_reste >= 12:
+                        dict_parcours1[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours1[j] = nb_reste
+                else:
+                    dict_parcours1[j+1] += nb_reste
+                    dict_parcours1[j] = 12
+                    j+=1
             else:
                 dict_parcours1[j] += parcours1[i][0]
             i += 1
@@ -452,14 +460,18 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
                 temp = 12 - dict_parcours0[j]
                 nb_reste = parcours0[i][0] - temp
 
-                dict_parcours0[j] = 12
-                j += 1
-                while nb_reste >= 12:
+                if nb_reste > 0 :
                     dict_parcours0[j] = 12
                     j += 1
-                    nb_reste -= 12
-                dict_parcours0[j] = nb_reste
-                
+                    while nb_reste >= 12:
+                        dict_parcours0[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours0[j] = nb_reste
+                else:
+                    dict_parcours0[j+1] += nb_reste
+                    dict_parcours0[j] = 12
+                    j+=1
             else:
                 dict_parcours0[j] += parcours0[i][0]
             i += 1
@@ -478,15 +490,19 @@ def retour_kayaks1place(j_depart: int, m_depart: int, a_depart: int):
             if (dict_parcours1[j] + parcours1[i][0]) > 12  :  # limite de 12 kayaks par passage
                 temp = 12 - dict_parcours1[j]
                 nb_reste = parcours1[i][0] - temp
-                
-                dict_parcours1[j] = 12
-                j += 1
-                while nb_reste >= 12:
+
+                if nb_reste > 0 :
                     dict_parcours1[j] = 12
                     j += 1
-                    nb_reste -= 12
-                dict_parcours1[j] = nb_reste
-                
+                    while nb_reste >= 12:
+                        dict_parcours1[j] = 12
+                        j += 1
+                        nb_reste -= 12
+                    dict_parcours1[j] = nb_reste
+                else:
+                    dict_parcours1[j+1] += nb_reste
+                    dict_parcours1[j] = 12
+                    j+=1
             else:
                 dict_parcours1[j] += parcours1[i][0]
             i += 1
