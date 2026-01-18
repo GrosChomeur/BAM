@@ -2,10 +2,6 @@ import sqlite3
 from BAM2 import (creer_base, con, cur, date, jour_suivant, ajouter_client, ajoute_resa, supprime_resa, retour_kayaks1place, retour_kayaks2places)
 
 def test_creer_base():
-
-# Je pense qu'il faudrait plutot faire différents creer_base() avec des paramètres différents pour chaque test pour tester si notre bdd gère bien les erreurs.
-# Là on ne fait que compararer si les paramètres passés sont bien dans la bdd ---------------- gros pb
-
     print("\nTests de la fonction creer_base() :")
     
     # Cas normal du projet
@@ -32,11 +28,14 @@ def test_creer_base():
         print('✕\n')
     except:
         print('✓\n')
+
         
 
 def test_jour_suivant():
-    print("\nTests de la fonction jour_suivant() :")
-    
+
+    print("\nTests de la fonction jour_suivant() :\n")
+    creer_base(9, 0, 18, 0, 50, 50)
+
     # Cas normal
     date(10, 1, 2026)
     nouveau_jour = jour_suivant()
