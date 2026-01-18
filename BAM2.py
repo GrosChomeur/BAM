@@ -523,9 +523,7 @@ if __name__ == "__main__":
     a,m,j = jour_suivant()
     date(a,m,j)
     ajouter_client("test@loc-kayak.fr", "Freak", "John")
-    ajoute_resa(2, 1, 2026, 9, 0, 5, 3, 1, "test@]loc-kayak.fr")
-    print(retour_kayaks1place(2, 1, 2026))
-    print(retour_kayaks2places(2, 1, 2026))
+
 
     con.commit()
     con.close()

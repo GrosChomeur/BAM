@@ -150,7 +150,6 @@ def test_retour_kayaks():
         print('✓\n')
     except:
         print('✕\n')
-        print(res1)
 
     #Test retour 2 places
     print("Test calcul retour 2 places: ", end = "")
